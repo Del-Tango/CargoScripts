@@ -7,19 +7,31 @@ PORT_NUMBER=8080
 TARGET='stdout' # (file | pipe | stdout)
 OUT_FILE_PATH=""
 OUT_FIFO_PATH=""
+SILENT='off'
 
 # SETTERS
+
+function set_silent_flag () {
+    local FLAG="$1"
+    if [[ "$FLAG" != 'on' ]] && [[ "$FLAG" != 'off' ]]; then
+        log_msg "[ WARNING ]: Invalid silent flag ($FLAG)."\
+            "Defaulting to ($SILENT)."
+        return 1
+    fi
+    SILENT="$FLAG"
+    return 0
+}
 
 function set_output_fifo_path () {
     local FIFO_PATH="$1"
     if [ ! -p "$FIFO_PATH" ]; then
-        echo "[ WARNING ]: No named pipe found at ($FIFO_PATH)."\
+        log_msg "[ WARNING ]: No named pipe found at ($FIFO_PATH)."\
             "Building..."
         mkfifo $FIFO_PATH &> /dev/null
         if [ $? -eq 0 ]; then
-            echo "[ OK ]: Successfully created named pipe ($FIFO_PATH)."
+            log_msg "[ OK ]: Successfully created named pipe ($FIFO_PATH)."
         else
-            echo "[ NOK }: Could not create named pipe ($FIFO_PATH)."
+            log_msg "[ NOK }: Could not create named pipe ($FIFO_PATH)."
             return 1
         fi
     fi
@@ -30,13 +42,13 @@ function set_output_fifo_path () {
 function set_output_file_path () {
     local FILE_PATH="$1"
     if [ ! -f "$FILE_PATH" ]; then
-        echo "[ WARNING ]: No file found at ($FILE_PATH)."\
+        log_msg "[ WARNING ]: No file found at ($FILE_PATH)."\
             "Building..."
         touch $FILE_PATH &> /dev/null
         if [ $? -eq 0 ]; then
-            echo "[ OK ]: Successfully created file ($FILE_PATH)."
+            log_msg "[ OK ]: Successfully created file ($FILE_PATH)."
         else
-            echo "[ NOK }: Could not create file ($FILE_PATH)."
+            log_msg "[ NOK }: Could not create file ($FILE_PATH)."
             return 1
         fi
     fi
@@ -48,7 +60,7 @@ function set_iteration_count () {
     local ITERATIONS=$1
     check_is_integer $ITERATIONS
     if [ $? -ne 0 ]; then
-        echo "[ ERROR ]: Raw listener iteration count must be a number,"\
+        log_msg "[ ERROR ]: Raw listener iteration count must be a number,"\
             "not ($ITERATIONS)."
         return 1
     fi
@@ -61,7 +73,7 @@ function set_target () {
     if [[ "$MSG_DST" != 'stdout' ]] \
             && [[ "$MSG_DST" != 'file' ]] \
             && [[ "$MSG_DST" != 'pipe' ]]; then
-        echo "[ WARNING ]: Invalid message destination ($MSG_DST)."\
+        log_msg "[ WARNING ]: Invalid message destination ($MSG_DST)."\
             "Defaulting to (single)."
         local MSG_DST='single'
     fi
@@ -73,7 +85,7 @@ function set_port_number () {
     local PORT=$1
     check_is_integer $PORT
     if [ $? -ne 0 ]; then
-        echo "[ ERROR ]: Port number value must be a number, not ($PORT)."
+        log_msg "[ ERROR ]: Port number value must be a number, not ($PORT)."
         return 1
     fi
     PORT_NUMBER=$PORT
@@ -82,6 +94,13 @@ function set_port_number () {
 
 # CHECKERS
 
+function check_silent_on () {
+    if [[ "$SILENT" != 'on' ]]; then
+        return 1
+    fi
+    return 0
+}
+
 function check_is_integer () {
     local VALUE=$1
     test $VALUE -eq $VALUE &> /dev/null
@@ -89,6 +108,16 @@ function check_is_integer () {
 }
 
 # GENERAL
+
+function log_msg () {
+    local MSG="$@"
+    check_silent_on
+    if [ $? -eq 0 ]; then
+        return 1
+    fi
+    echo "$MSG"
+    return $?
+}
 
 function raw_listener () {
     local PORT_NO=$1
@@ -104,7 +133,7 @@ function raw_listener () {
             local OUTPUT="$OUT_PIPE_PATH"
             ;;
         *)
-            echo "[ ERROR ]: Invalid message destination ($MSG_DST)."
+            log_msg "[ ERROR ]: Invalid message destination ($MSG_DST)."
             return 1
             ;;
     esac
@@ -116,13 +145,28 @@ function raw_listener () {
 
 # DISPLAY
 
+function display_banner () {
+    check_silent_on
+    if [ $? -eq 0 ]; then
+        return 1
+    fi
+    display_header; echo
+    display_target
+    display_port_number
+    display_iterations
+    display_output_file
+    display_output_fifo
+    echo; return 0
+}
+
+
 function display_target () {
     if [ -z "$TARGET" ]; then
         local TA_LABEL="Unspecified"
     else
         local TA_LABEL="$TARGET"
     fi
-    echo "    [ TARGET           ]: $TA_LABEL"
+    log_msg "    [ TARGET           ]: $TA_LABEL"
     return $?
 }
 
@@ -132,7 +176,7 @@ function display_port_number () {
     else
         local PN_LABEL="$PORT_NUMBER"
     fi
-    echo "    [ PORT NUMBER      ]: $PN_LABEL"
+    log_msg "    [ PORT NUMBER      ]: $PN_LABEL"
     return $?
 }
 
@@ -148,7 +192,7 @@ function display_iterations () {
             local IC_LABEL="$ITERATION_COUNT"
             ;;
     esac
-    echo "    [ ITERATIONS       ]: $IC_LABEL"
+    log_msg "    [ ITERATIONS       ]: $IC_LABEL"
     return $?
 }
 
@@ -156,7 +200,7 @@ function display_output_file () {
     if [ -z "$OUT_FILE_PATH" ]; then
         return 1
     fi
-    echo "    [ OUTPUT FILE      ]: $OUT_FILE_PATH"
+    log_msg "    [ OUTPUT FILE      ]: $OUT_FILE_PATH"
     return $?
 }
 
@@ -164,7 +208,7 @@ function display_output_fifo () {
     if [ -z "$OUT_FIFO_PATH" ]; then
         return 1
     fi
-    echo "    [ OUTPUT FIFO      ]: $OUT_FIFO_PATH"
+    log_msg "    [ OUTPUT FIFO      ]: $OUT_FIFO_PATH"
     return $?
 
 }
@@ -178,6 +222,7 @@ function display_usage () {
     [ USAGE ]: $0 -<option>=<value>
 
     -h  | --help                Display this message.
+    -s  | --silent              Display only messages received, no program dialogue.
     -p= | --port-number=        Port number to listen on for incomming connections.
     -i= | --iterations=         Number of messages to expect the listener to receive.
                                 A value of 0 (zero) initiates endless listening.
@@ -188,6 +233,7 @@ function display_usage () {
 
     [ EXAMPLE ]: $0
 
+    (-s | --silent              )
     (-p | --port-number         )=5432
     (-i | --iterations          )=0
     (-t | --target              )=file       # (stdout | file | pipe)
@@ -198,22 +244,12 @@ EOF
 }
 
 function display_header () {
-    echo "
+    log_msg "
     ___________________________________________________________________________
 
      *            *           * Raw Socket Listener *            *           *
     ___________________________________________________________________________
                         Regards, the Alveare Solutions society."
-}
-
-function display_banner () {
-    display_header; echo
-    display_target
-    display_port_number
-    display_iterations
-    display_output_file
-    display_output_fifo
-    echo; return 0
 }
 
 # INIT
@@ -234,7 +270,7 @@ function init_raw_listener () {
 # MISCELLANEOUS
 
 if [ $# -eq 0 ]; then
-    echo "[ ERROR ]: Invalid number of arguments ($#)."
+    log_msg "[ ERROR ]: Invalid number of arguments ($#)."
     display_usage
     exit 1
 fi
@@ -245,6 +281,9 @@ do
         -h|--help)
             display_usage
             exit 0
+            ;;
+        -s|--silent)
+            set_silent_flag 'on'
             ;;
         -p=*|--port-number=*)
             set_port_number "${opt#*=}"

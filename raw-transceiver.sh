@@ -5,8 +5,20 @@
 TARGET_ADDRESS='127.0.0.1' # Number of messages to expect. 0 indicates endless litening
 PORT_NUMBER=8080
 MESSAGE="`date` - (`whoami`) Conscript Reporting! `pwd`"
+SILENT='off'
 
 # SETTERS
+
+function set_silent_flag () {
+    local FLAG="$1"
+    if [[ "$FLAG" != 'on' ]] && [[ "$FLAG" != 'off' ]]; then
+        log_msg "[ WARNING ]: Invalid silent flag ($FLAG)."\
+            "Defaulting to ($SILENT)."
+        return 1
+    fi
+    SILENT="$FLAG"
+    return 0
+}
 
 function set_message () {
     local MSG="$@"
@@ -24,7 +36,7 @@ function set_port_number () {
     local PORT=$1
     check_is_integer $PORT
     if [ $? -ne 0 ]; then
-        echo "[ ERROR ]: Port number value must be a number, not ($PORT)."
+        log_msg "[ ERROR ]: Port number value must be a number, not ($PORT)."
         return 1
     fi
     PORT_NUMBER=$PORT
@@ -32,6 +44,13 @@ function set_port_number () {
 }
 
 # CHECKERS
+
+function check_silent_on () {
+    if [[ "$SILENT" != 'on' ]]; then
+        return 1
+    fi
+    return 0
+}
 
 function check_is_integer () {
     local VALUE=$1
@@ -41,16 +60,26 @@ function check_is_integer () {
 
 # GENERAL
 
+function log_msg () {
+    local MSG="$@"
+    check_silent_on
+    if [ $? -eq 0 ]; then
+        return 1
+    fi
+    echo "$MSG"
+    return $?
+}
+
 function raw_transceiver () {
     local ADDR="$1"
     local PORT_NO="$2"
     local MSG="${@:3}"
     echo "$MSG" | ncat "$ADDR" $PORT_NO &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "[ NOK ]: Message not sent! ($ADDR - $PORT_NO - $MSG)"
+        log_msg "[ NOK ]: Message not sent! ($ADDR - $PORT_NO - $MSG)"
         return 1
     else
-        echo "[ OK ]: Message sent! ($ADDR - $PORT_NO - $MSG)"
+        log_msg "[ OK ]: Message sent! ($ADDR - $PORT_NO - $MSG)"
     fi
     return $?
 }
@@ -65,7 +94,7 @@ function display_target_address () {
     else
         local TA_LABEL="$TARGET_ADDRESS"
     fi
-    echo "    [ TARGET ADDRESS   ]: $TA_LABEL"
+    log_msg "    [ TARGET ADDRESS   ]: $TA_LABEL"
     return $?
 }
 
@@ -75,7 +104,7 @@ function display_port_number () {
     else
         local PN_LABEL="$PORT_NUMBER"
     fi
-    echo "    [ PORT NUMBER      ]: $PN_LABEL"
+    log_msg "    [ PORT NUMBER      ]: $PN_LABEL"
     return $?
 }
 
@@ -85,7 +114,7 @@ function display_message () {
     else
         local MS_LABEL="$MESSAGE"
     fi
-    echo "    [ MESSAGE          ]: ${MS_LABEL:0:55}..."
+    log_msg "    [ MESSAGE          ]: ${MS_LABEL:0:55}..."
     return $?
 }
 
@@ -98,6 +127,7 @@ function display_usage () {
     [ USAGE ]: $0 -<option>=<value>
 
     -h  | --help                Display this message.
+    -s  | --silent              Don't display program dialogue
     -a= | --target-address=     IPv4 address of raw socket server listening for
                                 incomming connections.
     -p= | --port-number=        Port number used to comunicate with server at
@@ -106,6 +136,7 @@ function display_usage () {
 
     [ EXAMPLE ]: $0
 
+    (-s | --silent              )
     (-p | --port-number         )=5432
     (-a | --target-address      )="127.0.0.1"
     (-m | --message             )="\`date\` - (\`whoami\`) - Conscript Reporting!"
@@ -115,7 +146,7 @@ EOF
 }
 
 function display_header () {
-    echo "
+    log_msg "
     ___________________________________________________________________________
 
      *            *          * Raw Socket Transceiver *          *           *
@@ -124,6 +155,10 @@ function display_header () {
 }
 
 function display_banner () {
+    check_silent_on
+    if [ $? -eq 0 ]; then
+        return 1
+    fi
     display_header; echo
     display_target_address
     display_port_number
@@ -142,7 +177,7 @@ function init_raw_transceiver () {
 # MISCELLANEOUS
 
 if [ $# -eq 0 ]; then
-    echo "[ ERROR ]: Invalid number of arguments ($#)."
+    log_msg "[ ERROR ]: Invalid number of arguments ($#)."
     display_usage
     exit 1
 fi
@@ -153,6 +188,9 @@ do
         -h|--help)
             display_usage
             exit 0
+            ;;
+        -s|--silent)
+            set_silent_flag 'on'
             ;;
         -p=*|--port-number=*)
             set_port_number "${opt#*=}"
