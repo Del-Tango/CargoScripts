@@ -2,6 +2,7 @@
 #
 # Regards, the Alveare Solutions society.
 #
+# RAW SOCKET LISTENER
 ITERATION_COUNT=0 # Number of messages to expect. 0 indicates endless litening
 PORT_NUMBER=8080
 TARGET='stdout' # (file | pipe | stdout)
@@ -215,11 +216,12 @@ function display_output_fifo () {
 
 function display_usage () {
     display_header
+    local SCRIPT_NAME=`basename $0`
     cat<<EOF
 
     [ DESCRIPTION ]: Socket Listener.
 
-    [ USAGE ]: $0 -<option>=<value>
+    [ USAGE ]: $SCRIPT_NAME -<option>=<value>
 
     -h  | --help                Display this message.
     -s  | --silent              Display only messages received, no program dialogue.
@@ -231,7 +233,7 @@ function display_usage () {
     -F= | --output-file=        File path to redirect message to. Implies (-t='file').
     -P= | --output-pipe=        FIFO path to redirect message to. Implies (-t='pipe')
 
-    [ EXAMPLE ]: $0
+    [ EXAMPLE ]: $SCRIPT_NAME
 
     (-s | --silent              )
     (-p | --port-number         )=5432
