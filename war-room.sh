@@ -181,6 +181,21 @@ EOF
 # [ TODO ]: Improve validation procedures in next major version. Check for data
 #           type and missing files or directories.
 
+function validate_action_machine_shell_data_set () {
+    case "" in
+        $CONTAINER_INDEX)
+            echo "[ NOK ]: Invalid container index! ($CONTAINER_INDEX)"
+            return 1
+            ;;
+        $CONTAINER_ID)
+            echo "[ NOK ]: Invalid container ID! ($CONTAINER_ID)"
+            return 1
+            ;;
+    esac
+    echo "[ OK ]: Validated data set for action (machine-shell)."
+    return 0
+}
+
 function validate_action_reset_machine_data_set () {
     case "" in
         $CONTAINER_INDEX)
@@ -503,6 +518,18 @@ function refresh_container_index () {
 
 # ACTIONS
 
+function action_machine_shell () {
+    echo "[ INFO ]: Going down the RABBIT Hole... (${CONTAINER_ID})
+    "
+    ${SYSTEM_COMMANDS['docker-exec-user']} "${CONTAINER_ID}" "/bin/bash"
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: RABBIT Hole failure! Could not access machine shell."
+        return 1
+    fi
+    return $EXIT_CODE
+}
+
 function action_teardown_machines () {
     local INDEXED_CONTAINER_IDS=( `fetch_indexed_container_ids` )
     echo "[ INFO ]: Stopping Docker containers... (${#INDEXED_CONTAINER_IDS[@]})"
@@ -679,6 +706,19 @@ function action_create_machines () {
 
 # HANDLERS
 
+function handle_action_machine_shell () {
+    local FAILURES=0
+    validate_action_machine_shell_data_set
+    local FAILURES=$((FAILURES + $?))
+    action_machine_shell
+    local FAILURES=$((FAILURES + $?))
+    if [ $FAILURES -ne 0 ]; then
+        echo "[ WARNING ]: Action handler detected"\
+                "($FAILURES) failures! ($ACTION)"
+    fi
+    return $FAILURES
+}
+
 function handle_action_install_kit () {
     local FAILURES=0
     validate_action_install_kit_data_set
@@ -780,6 +820,8 @@ function display_usage () {
                                  container index file.
     -I=  | --install-kit=        Sets action to (install-kit). Receives path to
                                  Game Kit tarball.
+    -S=  | --machine-shell=      Gives the user an interactive shell to the specified
+                                 Docker container. Receives container ID.
     --docker-image=              Image for Docker to build the base image on.
     --docker-file=               Path to Dockerfile to use while building the
                                  base image.
@@ -833,6 +875,9 @@ function init_war_room () {
         'install-kit')
             handle_action_install_kit
             ;;
+        'machine-shell')
+            handle_action_machine_shell
+            ;;
         *)
             echo "[ ERROR ]: Invalid action detected! ($ACTION)"
             return 1
@@ -849,9 +894,13 @@ function init_war_room () {
 
 # MISCELLANEOUS
 
-if [ ${#@} -eq 0 ]; then
+if [ $EUID -ne 0 ]; then
     display_usage
+    echo "[ WARNING ]: $SCRIPT_NAME requires priviledged access rigts! Are you root?"
     exit 1
+elif [ ${#@} -eq 0 ]; then
+    display_usage
+    exit 2
 fi
 
 for opt in $@; do
@@ -890,6 +939,10 @@ for opt in $@; do
         -I=*|--install-kit=*)
             ACTION='install-kit'
             GAME_KIT="${opt#*=}"
+            ;;
+        -S=*|--machine-shell=*)
+            ACTION='machine-shell'
+            CONTAINER_ID="${opt#*=}"
             ;;
         --docker-image=*)
             DOCKER['image']="${opt#*=}"
@@ -948,6 +1001,7 @@ SYSTEM_COMMANDS=(
 ['docker-rmi']='docker rmi '                     # + <image-id>
 ['docker-provision']='docker cp '                # + <src-path> <container-id>:<dst-path>
 ['docker-exec']='docker exec -u 0 -it '          # + <container-id> <command>
+['docker-exec-user']='docker exec -it '          # + <container-id> <command>
 ['apt-update']='apt-get update'
 ['apt-install']='apt-get install -y '            # + <packages>
 ['apt-uninstall']='apt-get remove -y '           # + <packages>
