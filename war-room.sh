@@ -64,10 +64,9 @@ CONTAINER_PACKAGES=(
 )
 DEPENDENCIES=(
 'docker'
-'docker-engine'
 'docker.io'
 'sed'
-'awk'
+'gawk'
 'tar'
 )
 
@@ -518,6 +517,90 @@ function refresh_container_index () {
 
 # ACTIONS
 
+function action_set_docker_setuid_bit () {
+    local DOCKER_PATH=`which docker`
+    echo "[ INFO ]: Adding SETUID bit on executable! ($DOCKER_PATH)"
+    echo "${SYSTEM_COMMANDS['docker-setuid']}" | bash &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: Could not set SETUID bit on executable! ($DOCKER_PATH)"
+        return 1
+    fi
+    echo "[ OK ]: Successfully added SETUID bit!"
+    return 0
+}
+
+function action_install_dependencies () {
+    if [ ${#DEPENDENCIES[@]} -eq 0 ]; then
+        echo "[ WARNING ]: No dependencies found!"
+        return 1
+    fi
+    local FAILURES=0
+    echo "[ INFO ]: Updating APT package manager..."
+    ${SYSTEM_COMMANDS['apt-update']} &> /dev/null
+    if [ $? -ne 0 ]; then
+        local FAILURES=$((FAILURES + 1))
+        echo "[ NOK ]: Update failed! (${FAILURES})"
+    else
+        echo "[ OK ]: Update complete!"
+    fi
+    for pkg in ${DEPENDENCIES[@]}; do
+        echo "[ INFO ]: Installing package... ($pkg)"
+        ${SYSTEM_COMMANDS['apt-install']} "$pkg" &> /dev/null
+        if [ $? -ne 0 ]; then
+            local FAILURES=$((FAILURES + 1))
+            echo "[ NOK ]: Installation failed!"\
+                "(${SYSTEM_COMMANDS['apt-install']} $pkg)"
+        else
+            echo "[ OK ]: Installation complete!"
+        fi
+    done
+    return $FAILURES
+}
+
+function action_install_kit () {
+    local KIT_FILE=`basename ${GAME_KIT}`
+    echo "[ INFO ]: Provisioning container..."\
+        "(${CONTAINER_ID}:${CONTAINER['gamekit-dir']}/${KIT_FILE})"
+    ${SYSTEM_COMMANDS['docker-provision']} "$GAME_KIT" \
+        "${CONTAINER_ID}:${CONTAINER['gamekit-dir']}" &> /dev/null
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not provision container with game kit!"
+        return 1
+    else
+        echo "[ OK ]: Successfully provisioned container with game kit!"
+    fi
+    local KIT_DIR=`echo "$KIT_FILE" | cut -d'.' -f1`
+    local CDIR="${CONTAINER['gamekit-dir']}/${KIT_DIR}"
+    local CPATH="${CDIR}/${KIT_INSTALLER}"
+    local CMD="tar -xf ${CONTAINER['gamekit-dir']}/${KIT_FILE} --directory ${CONTAINER['gamekit-dir']}"
+    echo "[ INFO ]: Unpacking game kit... (${CMD})"
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: Could not unpack game kit!"
+    else
+        echo "[ OK ]: Game kit unpacked!"
+    fi
+    local CMD="chmod +x -R $CDIR && chown root $CDIR && chmod u+s -R $CDIR"
+    echo "[ INFO ]: Setting installer execution rights... (${CMD})"
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: Could not set execution rights!"
+    else
+        echo "[ OK ]: Install is executable!"
+    fi
+    echo "[ INFO ]: Executing game kit installer... (${CPATH})"
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CPATH
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not execute game kit installer!"
+    else
+        echo "[ OK ]: Successfully installed game kit! ($CPATH)"
+        update_container_game_kit "$CONTAINER_ID" "$GAME_KIT"
+    fi
+    return $EXIT_CODE
+}
+
 function action_machine_shell () {
     echo "[ INFO ]: Going down the RABBIT Hole... (${CONTAINER_ID})
     "
@@ -555,49 +638,6 @@ function action_teardown_machines () {
         echo "[ WARNING ]: Could not remove Docker images!"
     else
         echo "[ OK ]: Successfully removed Docker images!"
-    fi
-    return $EXIT_CODE
-}
-
-function action_install_kit () {
-    local KIT_FILE=`basename ${GAME_KIT}`
-    echo "[ INFO ]: Provisioning container..."\
-        "(${CONTAINER_ID}:${CONTAINER['gamekit-dir']}/${KIT_FILE})"
-    ${SYSTEM_COMMANDS['docker-provision']} "$GAME_KIT" \
-        "${CONTAINER_ID}:${CONTAINER['gamekit-dir']}" &> /dev/null
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not provision container with game kit!"
-        return 1
-    else
-        echo "[ OK ]: Successfully provisioned container with game kit!"
-    fi
-    local KIT_DIR=`echo "$KIT_FILE" | cut -d'.' -f1`
-    local CPATH="${CONTAINER['gamekit-dir']}/${KIT_DIR}/${KIT_INSTALLER}"
-    local CMD="tar -xf ${CONTAINER['gamekit-dir']}/${KIT_FILE} --directory ${CONTAINER['gamekit-dir']}"
-    echo "[ INFO ]: Unpacking game kit... (${CMD})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD
-    if [ $? -ne 0 ]; then
-        echo "[ NOK ]: Could not unpack game kit!"
-    else
-        echo "[ OK ]: Game kit unpacked!"
-    fi
-    local CMD="chmod +x $CPATH"
-    echo "[ INFO ]: Setting installer execution rights... (${CMD})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD
-    if [ $? -ne 0 ]; then
-        echo "[ NOK ]: Could not set execution rights!"
-    else
-        echo "[ OK ]: Install is executable!"
-    fi
-    echo "[ INFO ]: Executing game kit installer... (${CPATH})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CPATH
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not execute game kit installer!"
-    else
-        echo "[ OK ]: Successfully installed game kit! ($CPATH)"
-        update_container_game_kit "$CONTAINER_ID" "$GAME_KIT"
     fi
     return $EXIT_CODE
 }
@@ -705,6 +745,19 @@ function action_create_machines () {
 }
 
 # HANDLERS
+
+function handle_action_setup () {
+    local FAILURES=0
+    action_install_dependencies
+    local FAILURES=$((FAILURES + $?))
+    action_set_docker_setuid_bit
+    local FAILURES=$((FAILURES + $?))
+    if [ $FAILURES -ne 0 ]; then
+        echo "[ WARNING ]: Action handler detected"\
+            "($FAILURES) failures! ($ACTION)"
+    fi
+    return $FAILURES
+}
 
 function handle_action_machine_shell () {
     local FAILURES=0
@@ -878,6 +931,9 @@ function init_war_room () {
         'machine-shell')
             handle_action_machine_shell
             ;;
+        'setup')
+            handle_action_setup
+            ;;
         *)
             echo "[ ERROR ]: Invalid action detected! ($ACTION)"
             return 1
@@ -894,13 +950,9 @@ function init_war_room () {
 
 # MISCELLANEOUS
 
-if [ $EUID -ne 0 ]; then
+if [ ${#@} -eq 0 ]; then
     display_usage
-    echo "[ WARNING ]: $SCRIPT_NAME requires priviledged access rigts! Are you root?"
     exit 1
-elif [ ${#@} -eq 0 ]; then
-    display_usage
-    exit 2
 fi
 
 for opt in $@; do
@@ -908,6 +960,14 @@ for opt in $@; do
         -h|--help)
             display_usage
             exit 0
+            ;;
+        --setup)
+            if [ $EUID -ne 0 ]; then
+                display_usage
+                echo "[ WARNING ]: --setup requires priviledged access rigts! Are you root?"
+                exit 2
+            fi
+            ACTION='setup'
             ;;
         -c=*|--container-id=*)
             CONTAINER_ID="${opt#*=}"
@@ -1013,7 +1073,10 @@ SYSTEM_COMMANDS=(
 ['fetch-cids']="docker ps -a | awk '{print \$1}' | grep -v CONTAINER"
 ['fetch-indexed-cids']="awk -F, '\$1 !~ \"#\" && \$1 !~ \"^$\" {print \$2}' $CONTAINER_INDEX"
 ['ssh-start']="service ssh start"
+['docker-setuid']="chown root \`which docker\` && chmod +s \`which docker\` || exit 1"
 )
+
+# TODO - Set docker setuid bit on setup
 
 case "$SILENT" in
     'on')
