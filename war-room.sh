@@ -517,6 +517,108 @@ function refresh_container_index () {
 
 # ACTIONS
 
+function action_install_kit () {
+    local KIT_FILE=`basename ${GAME_KIT}`
+    echo "[ INFO ]: Provisioning container..."\
+        "(${CONTAINER_ID}:${CONTAINER['gamekit-dir']}/${KIT_FILE})"
+    ${SYSTEM_COMMANDS['docker-provision']} "$GAME_KIT" \
+        "${CONTAINER_ID}:${CONTAINER['gamekit-dir']}" &> /dev/null
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not provision container with game kit!"
+        return 1
+    else
+        echo "[ OK ]: Successfully provisioned container with game kit!"
+    fi
+    local KIT_DIR=`echo "$KIT_FILE" | cut -d'.' -f1`
+    local CDIR="${CONTAINER['gamekit-dir']}/${KIT_DIR}"
+    local CPATH="${CDIR}/${KIT_INSTALLER}"
+    local CMD="tar -xf ${CONTAINER['gamekit-dir']}/${KIT_FILE} --directory ${CONTAINER['gamekit-dir']}"
+    echo "[ INFO ]: Unpacking game kit... (${CMD})"
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: Could not unpack game kit!"
+    else
+        echo "[ OK ]: Game kit unpacked!"
+    fi
+    echo "[ INFO ]: Setting installer execution rights... (${CMD})"
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID chown root $CDIR &> /dev/null
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID chmod +x -R $CDIR &> /dev/null
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID chmod +s -R $CDIR &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: Could not set execution rights!"
+    else
+        echo "[ OK ]: Install is executable!"
+    fi
+    echo "[ INFO ]: Executing game kit installer... (${CPATH})"
+    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CPATH
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not execute game kit installer!"
+    else
+        echo "[ OK ]: Successfully installed game kit! ($CPATH)"
+        update_container_game_kit "$CONTAINER_ID" "$GAME_KIT"
+    fi
+    return $EXIT_CODE
+}
+
+function action_reset_machine () {
+    echo "[ INFO ]: Storing container surface image..."
+    SURFACE_DOCKER_IMAGE_ID=`awk -F, -v cid="$CONTAINER_ID" \
+        '$1 !~ "#" && $1 !~ "^#" && $2 == cid {print $4}' \
+        "$CONTAINER_INDEX"`
+    BASE_DOCKER_IMAGE_ID=`awk -F, -v cid="$CONTAINER_ID" \
+        '$1 !~ "#" && $1 !~ "^#" && $2 == cid {print $5}' \
+        "$CONTAINER_INDEX"`
+    if [ $? -ne 0 ] || [ -z "$SURFACE_DOCKER_IMAGE_ID" ]; then
+        echo "[ NOK ]: Could not identify container surface image to reset!"\
+            "($CONTAINER_ID)"
+        return 1
+    fi
+    echo "[ OK ]: Successfully identifierd container surface image!"\
+        "($SURFACE_DOCKER_IMAGE_ID)"
+    echo "[ INFO ]: Stopping Docker container... (${CONTAINER_ID})"
+    ${SYSTEM_COMMANDS['docker-stop']} "${CONTAINER_ID}" &> /dev/null
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not stop Docker containers! ($EXIT_CODE)"
+    else
+        echo "[ OK ]: Successfully stop Docker containers!"
+    fi
+    echo "[ INFO ]: Removing container... ($CONTAINER_ID)"
+    ${SYSTEM_COMMANDS['docker-rmc']} "$CONTAINER_ID" &> /dev/null
+    local LINE_NO=`awk -F, -v cid="$CONTAINER_ID" \
+        '$1 !~ "#" && $1 !~ "^$" && $2 == cid {print NR; exit 0}' \
+        "$CONTAINER_INDEX"`
+    sed -i "${LINE_NO}d" "$CONTAINER_INDEX" &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "[ WARNING ]: Could not remove container index record!"\
+            "(${CONTAINER_ID})"
+    fi
+    echo "[ INFO ]; Spawning container from surface image..."\
+        "($SURFACE_DOCKER_IMAGE_ID)"
+    local MACHINE_ID=`start_docker_surface_container "$SURFACE_DOCKER_IMAGE_ID"`
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not start Docker surface container! ($EXIT_CODE)"
+        return 2
+    fi
+    echo "[ OK ]: Container spawned! ($MACHINE_ID)"
+    local INDEX_RECORD=`format_container_index_record "$MACHINE_ID"`
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not format container index record!"\
+            "($MACHINE_ID) ($EXIT_CODE)"
+    fi
+    update_container_index "$INDEX_RECORD"
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not update container index!"\
+            "($CONTAINER_INDEX) ($EXIT_CODE)"
+    fi
+    return 0
+}
+
 function action_set_docker_setuid_bit () {
     local DOCKER_PATH=`which docker`
     echo "[ INFO ]: Adding SETUID bit on executable! ($DOCKER_PATH)"
@@ -555,50 +657,6 @@ function action_install_dependencies () {
         fi
     done
     return $FAILURES
-}
-
-function action_install_kit () {
-    local KIT_FILE=`basename ${GAME_KIT}`
-    echo "[ INFO ]: Provisioning container..."\
-        "(${CONTAINER_ID}:${CONTAINER['gamekit-dir']}/${KIT_FILE})"
-    ${SYSTEM_COMMANDS['docker-provision']} "$GAME_KIT" \
-        "${CONTAINER_ID}:${CONTAINER['gamekit-dir']}" &> /dev/null
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not provision container with game kit!"
-        return 1
-    else
-        echo "[ OK ]: Successfully provisioned container with game kit!"
-    fi
-    local KIT_DIR=`echo "$KIT_FILE" | cut -d'.' -f1`
-    local CDIR="${CONTAINER['gamekit-dir']}/${KIT_DIR}"
-    local CPATH="${CDIR}/${KIT_INSTALLER}"
-    local CMD="tar -xf ${CONTAINER['gamekit-dir']}/${KIT_FILE} --directory ${CONTAINER['gamekit-dir']}"
-    echo "[ INFO ]: Unpacking game kit... (${CMD})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD
-    if [ $? -ne 0 ]; then
-        echo "[ NOK ]: Could not unpack game kit!"
-    else
-        echo "[ OK ]: Game kit unpacked!"
-    fi
-    local CMD="chmod +x -R $CDIR && chown root $CDIR && chmod u+s -R $CDIR"
-    echo "[ INFO ]: Setting installer execution rights... (${CMD})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD
-    if [ $? -ne 0 ]; then
-        echo "[ NOK ]: Could not set execution rights!"
-    else
-        echo "[ OK ]: Install is executable!"
-    fi
-    echo "[ INFO ]: Executing game kit installer... (${CPATH})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CPATH
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not execute game kit installer!"
-    else
-        echo "[ OK ]: Successfully installed game kit! ($CPATH)"
-        update_container_game_kit "$CONTAINER_ID" "$GAME_KIT"
-    fi
-    return $EXIT_CODE
 }
 
 function action_machine_shell () {
@@ -640,56 +698,6 @@ function action_teardown_machines () {
         echo "[ OK ]: Successfully removed Docker images!"
     fi
     return $EXIT_CODE
-}
-
-function action_reset_machine () {
-    echo "[ INFO ]: Storing container surface image..."
-    SURFACE_DOCKER_IMAGE_ID=`awk -F, -v cid="$CONTAINER_ID" \
-        '$1 !~ "#" && $1 !~ "^#" && $2 == cid {print $4}' \
-        "$CONTAINER_INDEX"`
-    BASE_DOCKER_IMAGE_ID=`awk -F, -v cid="$CONTAINER_ID" \
-        '$1 !~ "#" && $1 !~ "^#" && $2 == cid {print $5}' \
-        "$CONTAINER_INDEX"`
-    if [ $? -ne 0 ] || [ -z "$SURFACE_DOCKER_IMAGE_ID" ]; then
-        echo "[ NOK ]: Could not identify container surface image to reset!"\
-            "($CONTAINER_ID)"
-        return 1
-    else
-        echo "[ OK ]: Successfully identifierd container surface image!"\
-            "($CONTAINER_ID)"
-    fi
-    echo "[ INFO ]: Removing container... ($CONTAINER_ID)"
-    ${SYSTEM_COMMANDS['docker-rmc']} "$CONTAINER_ID" &> /dev/null
-    local LINE_NO=`awk -F, -v cid="$CONTAINER_ID" \
-        '$1 !~ "#" && $1 !~ "^$" && $2 == cid {print NR; exit 0}' \
-        "$CONTAINER_INDEX"`
-    sed -i "${LINE_NO}d" "$CONTAINER_INDEX" &> /dev/null
-    if [ $? -ne 0 ]; then
-        echo "[ WARNING ]: Could not remove container index record!"\
-            "(${CONTAINER_ID})"
-    fi
-    echo "[ INFO ]; Spawning container from surface image..."\
-        "($SURFACE_DOCKER_IMAGE_ID)"
-    local MACHINE_ID=`start_docker_surface_container "$SURFACE_DOCKER_IMAGE_ID"`
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not start Docker surface container! ($EXIT_CODE)"
-        return 2
-    fi
-    echo "[ OK ]: Container spawned! ($MACHINE_ID)"
-    local INDEX_RECORD=`format_container_index_record "$MACHINE_ID"`
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not format container index record!"\
-            "($MACHINE_ID) ($EXIT_CODE)"
-    fi
-    update_container_index "$INDEX_RECORD"
-    local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ NOK ]: Could not update container index!"\
-            "($CONTAINER_INDEX) ($EXIT_CODE)"
-    fi
-    return 0
 }
 
 function action_create_machines () {
@@ -1059,9 +1067,9 @@ SYSTEM_COMMANDS=(
 ['docker-imgs']='docker images'
 ['docker-rmc']='docker rm '                      # + <container-id>
 ['docker-rmi']='docker rmi '                     # + <image-id>
-['docker-provision']='docker cp '                # + <src-path> <container-id>:<dst-path>
-['docker-exec']='docker exec -u 0 -it '          # + <container-id> <command>
-['docker-exec-user']='docker exec -it '          # + <container-id> <command>
+['docker-provision']='docker cp'                 # + <src-path> <container-id>:<dst-path>
+['docker-exec']='docker exec -u 0 -it'           # + <container-id> <command>
+['docker-exec-user']='docker exec -it'           # + <container-id> <command>
 ['apt-update']='apt-get update'
 ['apt-install']='apt-get install -y '            # + <packages>
 ['apt-uninstall']='apt-get remove -y '           # + <packages>
@@ -1076,8 +1084,6 @@ SYSTEM_COMMANDS=(
 ['docker-setuid']="chown root \`which docker\` && chmod +s \`which docker\` || exit 1"
 )
 
-# TODO - Set docker setuid bit on setup
-
 case "$SILENT" in
     'on')
         init_war_room &> /dev/null
@@ -1085,7 +1091,10 @@ case "$SILENT" in
     *)
         init_war_room
         ;;
-esac; echo
+esac
+
+EXIT_CODE=$?
+echo; exit $EXIT_CODE
 
 # CODE DUMP
 
