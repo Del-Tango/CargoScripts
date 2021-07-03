@@ -162,7 +162,7 @@ WORKDIR ${DOCKER['workdir']}
 STOPSIGNAL ${DOCKER['stopsig']}
 RUN ${SYSTEM_COMMANDS['apt-update']}
 RUN ${SYSTEM_COMMANDS['apt-install']} ${CONTAINER_PACKAGES[@]}
-RUN ${SYSTEM_COMMANDS['add-user']} ${DOCKER['user']}
+RUN ${SYSTEM_COMMANDS['add-user']} --password ${DOCKER['user']} ${DOCKER['user']}
 RUN chown ${DOCKER['user']} ${DOCKER['workdir']} && chmod 755 -R ${DOCKER['workdir']}
 USER ${DOCKER['user']}
 EOF
@@ -1058,25 +1058,25 @@ SYSTEM_COMMANDS=(
 ['docker-images']='docker images'
 ['docker-containers']='docker ps -a'
 ['docker-start-service']='service docker start'
-['docker-run']='docker run -it '                 # + <image-id> <command>
-['docker-run-detached']='docker run -d '         # + <image-id> <command>
-['docker-build']='docker build -f '              # + <dockerfile-path> <directory>
-['docker-start']='docker start -ia '             # + <container-id>
-['docker-stop']='docker stop '                   # + <container-id>
+['docker-run']='docker run -it '                         # + <image-id> <command>
+['docker-run-detached']='docker run -d '                 # + <image-id> <command>
+['docker-build']='docker build -f '                      # + <dockerfile-path> <directory>
+['docker-start']='docker start -ia '                     # + <container-id>
+['docker-stop']='docker stop '                           # + <container-id>
 ['docker-status']='service docker status'
 ['docker-imgs']='docker images'
-['docker-rmc']='docker rm '                      # + <container-id>
-['docker-rmi']='docker rmi '                     # + <image-id>
-['docker-provision']='docker cp'                 # + <src-path> <container-id>:<dst-path>
-['docker-exec']='docker exec -u 0 -it'           # + <container-id> <command>
-['docker-exec-user']='docker exec -it'           # + <container-id> <command>
+['docker-rmc']='docker rm '                              # + <container-id>
+['docker-rmi']='docker rmi '                             # + <image-id>
+['docker-provision']='docker cp'                         # + <src-path> <container-id>:<dst-path>
+['docker-exec']='docker exec -u 0 -it'                   # + <container-id> <command>
+['docker-exec-user']='docker exec -it'                   # + <container-id> <command>
 ['apt-update']='apt-get update'
-['apt-install']='apt-get install -y '            # + <packages>
-['apt-uninstall']='apt-get remove -y '           # + <packages>
-['add-user']="useradd "                          # + <username>
-['interface-up']="ifup "                         # + <interface>
-['interface-down']="ifdown "                     # + <interface>
-['unpack-tarball']="tar -xf "                    # + <archive>
+['apt-install']='apt-get install -y '                    # + <packages>
+['apt-uninstall']='apt-get remove -y '                   # + <packages>
+['add-user']="useradd --create-home --shell /bin/bash "  # + --password <password> <username>
+['interface-up']="ifup "                                 # + <interface>
+['interface-down']="ifdown "                             # + <interface>
+['unpack-tarball']="tar -xf "                            # + <archive>
 ['fetch-interface']="ifconfig | grep 'UP' | grep 'BROADCAST' | awk -F: '{print \$1}'"
 ['fetch-cids']="docker ps -a | awk '{print \$1}' | grep -v CONTAINER"
 ['fetch-indexed-cids']="awk -F, '\$1 !~ \"#\" && \$1 !~ \"^$\" {print \$2}' $CONTAINER_INDEX"
