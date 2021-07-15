@@ -12,7 +12,7 @@ declare -A SYSTEM_COMMANDS
 
 DOCKER=(
 ['image']='debian'
-['file']='Dockerfile'
+['file']='data/Dockerfile'
 ['maintainer']='Alveare Solutions #!/Society -x'
 ['label']='com.alvearesolutions.pack="War Room"'
 ['volume']='/tmp/war_room'
@@ -25,7 +25,7 @@ DOCKER=(
 ['health-script']=
 ['workdir']="/home/${DOCKER['user']}"
 )
-CONTAINER_INDEX='war-machines.index'
+CONTAINER_INDEX='data/war-machines.index'
 KIT_INSTALLER='setup.sh'
 SILENT='off'                            # (on | off)
 CONTAINER_COUNT=5
@@ -41,7 +41,7 @@ VERSION_NO='1.0'
 BASE_DOCKER_IMAGE_ID=
 SURFACE_DOCKER_IMAGE_ID=
 CONTAINER=(
-['gamekit-dir']='/opt'
+['gamekit-dir']='/root'
 ['scripts-dir']='/usr/local/bin'
 ['health-script']='health-check.sh'
 )
@@ -61,6 +61,20 @@ CONTAINER_PACKAGES=(
 'elinks'
 'tmux'
 'vim'
+'net-tools'
+'bash'
+'sed'
+'gawk'
+'ed'
+'netcat'
+'tree'
+'htop'
+'file'
+'bc'
+'python'
+'python3'
+'cron'
+'sudo'
 )
 DEPENDENCIES=(
 'docker'
@@ -277,6 +291,22 @@ function validate_action_create_machines_data_set () {
 }
 
 # ENSURANCE
+
+function ensure_docker_container_running () {
+    ${SYSTEM_COMMANDS['docker-exec']} "${CONTAINER_ID}" 'ls' &> /dev/null
+    if [ $? -eq 0 ]; then
+        return 0
+    fi
+    ${SYSTEM_COMMANDS['docker-start']} "${CONTAINER_ID}" &> /dev/null
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "[ NOK ]: Could not ensure Docker container is running!"\
+            "(${CONTAINER_ID})"
+    else
+        echo "[ OK ]: Docker container surely running! (${CONTAINER_ID})"
+    fi
+    return $EXIT_CODE
+}
 
 function ensure_docker_daemon () {
     ${SYSTEM_COMMANDS['docker-status']} &> /dev/null
@@ -521,6 +551,10 @@ function action_install_kit () {
     local KIT_FILE=`basename ${GAME_KIT}`
     echo "[ INFO ]: Provisioning container..."\
         "(${CONTAINER_ID}:${CONTAINER['gamekit-dir']}/${KIT_FILE})"
+    ensure_docker_container_running
+    if [ $? -ne 0 ]; then
+        echo "[ WARNING ]: Not sure target Docker container is running!"
+    fi
     ${SYSTEM_COMMANDS['docker-provision']} "$GAME_KIT" \
         "${CONTAINER_ID}:${CONTAINER['gamekit-dir']}" &> /dev/null
     local EXIT_CODE=$?
@@ -535,13 +569,21 @@ function action_install_kit () {
     local CPATH="${CDIR}/${KIT_INSTALLER}"
     local CMD="tar -xf ${CONTAINER['gamekit-dir']}/${KIT_FILE} --directory ${CONTAINER['gamekit-dir']}"
     echo "[ INFO ]: Unpacking game kit... (${CMD})"
-    ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CMD &> /dev/null
+    ensure_docker_container_running
+    if [ $? -ne 0 ]; then
+        echo "[ WARNING ]: Not sure target Docker container is running!"
+    fi
+    ${SYSTEM_COMMANDS['docker-exec']} "$CONTAINER_ID" $CMD &> /dev/null
     if [ $? -ne 0 ]; then
         echo "[ NOK ]: Could not unpack game kit!"
     else
         echo "[ OK ]: Game kit unpacked!"
     fi
-    echo "[ INFO ]: Setting installer execution rights... (${CMD})"
+    echo "[ INFO ]: Setting installer execution rights..."
+    ensure_docker_container_running
+    if [ $? -ne 0 ]; then
+        echo "[ WARNING ]: Not sure target Docker container is running!"
+    fi
     ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID chown root $CDIR &> /dev/null
     ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID chmod +x -R $CDIR &> /dev/null
     ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID chmod +s -R $CDIR &> /dev/null
@@ -551,6 +593,7 @@ function action_install_kit () {
         echo "[ OK ]: Install is executable!"
     fi
     echo "[ INFO ]: Executing game kit installer... (${CPATH})"
+    ensure_docker_container_running
     ${SYSTEM_COMMANDS['docker-exec']} $CONTAINER_ID $CPATH
     local EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
@@ -705,8 +748,8 @@ function action_create_machines () {
     echo "[ INFO ]: Building base Docker image - this might take a while..."
     BASE_DOCKER_IMAGE_ID=`build_docker_image_base`
     local EXIT_CODE=$?
-    local FAILURES=$((FAILURES + $EXIT_CODE))
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [ -z "$BASE_DOCKER_IMAGE_ID" ] || [ $EXIT_CODE -ne 0 ]; then
+        local FAILURES=$((FAILURES + 1))
         echo "[ NOK ]: Could not build Docker base image! ($EXIT_CODE)"
         return $FAILURES
     fi
@@ -715,8 +758,8 @@ function action_create_machines () {
     echo "[ INFO ]: Building surface Docker image - this won't take as long..."
     SURFACE_DOCKER_IMAGE_ID=`build_docker_image_surface`
     local EXIT_CODE=$?
-    local FAILURES=$((FAILURES + $EXIT_CODE))
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [ -z "$SURFACE_DOCKER_IMAGE_ID" ] || [ $EXIT_CODE -ne 0 ]; then
+        local FAILURES=$((FAILURES + 1))
         echo "[ NOK ]: Could not build Docker surface image! ($EXIT_CODE)"
         return $FAILURES
     fi
@@ -724,23 +767,23 @@ function action_create_machines () {
         echo "[ INFO ]; Spawning container no.($machine_no)..."
         local MACHINE_ID=`start_docker_surface_container "$SURFACE_DOCKER_IMAGE_ID"`
         local EXIT_CODE=$?
-        local FAILURES=$((FAILURES + $EXIT_CODE))
         if [ $EXIT_CODE -ne 0 ]; then
+            local FAILURES=$((FAILURES + 1))
             echo "[ NOK ]: Could not start Docker surface container! ($EXIT_CODE)"
             continue
         fi
         echo "[ OK ]: Container spawned! ($MACHINE_ID)"
         local INDEX_RECORD=`format_container_index_record "$MACHINE_ID"`
         local EXIT_CODE=$?
-        local FAILURES=$((FAILURES + $EXIT_CODE))
         if [ $EXIT_CODE -ne 0 ]; then
+            local FAILURES=$((FAILURES + 1))
             echo "[ NOK ]: Could not format container index record!"\
                 "($MACHINE_ID) ($EXIT_CODE)"
         fi
         update_container_index "$INDEX_RECORD"
         local EXIT_CODE=$?
-        local FAILURES=$((FAILURES + $EXIT_CODE))
         if [ $EXIT_CODE -ne 0 ]; then
+            local FAILURES=$((FAILURES + 1))
             echo "[ NOK ]: Could not update container index!"\
                 "($CONTAINER_INDEX) ($EXIT_CODE)"
         fi
@@ -753,6 +796,19 @@ function action_create_machines () {
 }
 
 # HANDLERS
+
+function handle_action_install_kit () {
+    local FAILURES=0
+    validate_action_install_kit_data_set
+    local FAILURES=$((FAILURES + $?))
+    action_install_kit
+    local FAILURES=$((FAILURES + $?))
+    if [ $FAILURES -ne 0 ]; then
+        echo "[ WARNING ]: Action handler detected"\
+                "($FAILURES) failures! ($ACTION)"
+    fi
+    return $FAILURES
+}
 
 function handle_action_setup () {
     local FAILURES=0
@@ -772,19 +828,6 @@ function handle_action_machine_shell () {
     validate_action_machine_shell_data_set
     local FAILURES=$((FAILURES + $?))
     action_machine_shell
-    local FAILURES=$((FAILURES + $?))
-    if [ $FAILURES -ne 0 ]; then
-        echo "[ WARNING ]: Action handler detected"\
-                "($FAILURES) failures! ($ACTION)"
-    fi
-    return $FAILURES
-}
-
-function handle_action_install_kit () {
-    local FAILURES=0
-    validate_action_install_kit_data_set
-    local FAILURES=$((FAILURES + $?))
-    action_install_kit
     local FAILURES=$((FAILURES + $?))
     if [ $FAILURES -ne 0 ]; then
         echo "[ WARNING ]: Action handler detected"\
@@ -1061,15 +1104,15 @@ SYSTEM_COMMANDS=(
 ['docker-run']='docker run -it '                         # + <image-id> <command>
 ['docker-run-detached']='docker run -d '                 # + <image-id> <command>
 ['docker-build']='docker build -f '                      # + <dockerfile-path> <directory>
-['docker-start']='docker start -ia '                     # + <container-id>
+['docker-start']='docker start '                         # + <container-id>
 ['docker-stop']='docker stop '                           # + <container-id>
 ['docker-status']='service docker status'
 ['docker-imgs']='docker images'
 ['docker-rmc']='docker rm '                              # + <container-id>
 ['docker-rmi']='docker rmi '                             # + <image-id>
-['docker-provision']='docker cp'                         # + <src-path> <container-id>:<dst-path>
-['docker-exec']='docker exec -u 0 -it'                   # + <container-id> <command>
-['docker-exec-user']='docker exec -it'                   # + <container-id> <command>
+['docker-provision']='docker cp '                        # + <src-path> <container-id>:<dst-path>
+['docker-exec']='docker exec -u0 -it '                   # + <container-id> <command>
+['docker-exec-user']='docker exec -it '                  # + <container-id> <command>
 ['apt-update']='apt-get update'
 ['apt-install']='apt-get install -y '                    # + <packages>
 ['apt-uninstall']='apt-get remove -y '                   # + <packages>
