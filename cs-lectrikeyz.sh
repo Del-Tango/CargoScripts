@@ -383,11 +383,11 @@ get-https-traffic______________________________________________________________t
 count-logical-processor-threads________________________________________________grep processor /proc/cpuinfo | wc -l
 block-ip-addr_________________________________<IPv4-ADDRESS>___________________route add <ipv4-address> reject
 
-[ EXAMPLE ]: ~$ $0 find-traffic-using-port-range 21-25
-[ EXAMPLE ]: ~$ $0 find-traffic-based-on-packet-size less 112
-[ EXAMPLE ]: ~$ $0 find-traffic-based-on-packet-size greater 35
-[ EXAMPLE ]: ~$ $0 from-one-network-to-another 192.168.0.0/16 10.0.0.0/8
-[ EXAMPLE ]: ~$ $0 find-ssh-cnx
+[ EXAMPLE ]: ~$ `basename $0` find-traffic-using-port-range 21-25
+[ EXAMPLE ]: ~$ `basename $0` find-traffic-based-on-packet-size less 112
+[ EXAMPLE ]: ~$ `basename $0` find-traffic-based-on-packet-size greater 35
+[ EXAMPLE ]: ~$ `basename $0` from-one-network-to-another 192.168.0.0/16 10.0.0.0/8
+[ EXAMPLE ]: ~$ `basename $0` find-ssh-cnx
 
 EOF
 }
