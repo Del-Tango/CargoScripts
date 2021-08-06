@@ -493,9 +493,7 @@ function display_header () {
 
 }
 
-# TODO
 function display_usage () {
-    echo "[ WARNING ]: Under construction, building..."
     display_header
     cat <<EOF
  1. new-iptables-chain________________________<CHAIN-NAME>__________________________________________________iptables -N <chain-name>
@@ -532,23 +530,23 @@ function display_usage () {
 32. save-current-iptables-rules_______________<FILE-PATH>___________________________________________________iptables-save > <file-path>
 33. restore-iptables-rules____________________<FILE-PATH>___________________________________________________iptables-restore < <file-path>
 -h | --help_________________________________________________________________________________________________Display this message.
+
+[ EXAMPLE ]: `basename $0` block-ipv4-subnet 192.168.0.0/24
+[ EXAMPLE ]: `basename $0` 5 192.168.0.0/24
+[ EXAMPLE ]: `basename $0` port-forwarding wlan0 192.168.0.2 192.168.0.3 22
+[ EXAMPLE ]: `basename $0` allow-incomming-multiport wlan0 22,80,443
+
 EOF
 }
 
 # MISCELLANEOUS
 
 if [ $EUID -ne 0 ]; then
-    echo "[ WARNING ]: $0 requires elevated priviledges. Are you root?"
+    echo "[ WARNING ]: `basename $0` requires elevated priviledges. Are you root?"
 fi
 
 init_cheat_sheet $@
 exit $?
 
 # CODE DUMP
-#   # Port forwarding
-#   iptables -t nat -A PREROUTING -p tcp -d 1.2.3.4 --dport 422 -j DNAT --to 192.168.0.100:422
-#   iptables -A INPUT -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
-#   iptables -A OUTPUT -p tcp --sport 25 -m state --state ESTABLISHED -j ACCEPT
-#   # Port forwarding
-#   iptables -t nat -A PREROUTING -p tcp -d 1.2.3.4 --dport 422 -j DNAT --to 192.168.0.100:22
 
