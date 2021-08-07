@@ -326,11 +326,11 @@ function exec_msg () {
 
 function display_header () {
     cat<<EOF
-_______________________________________________________________________________
+    _______________________________________________________________________________
 
-  *                       *  ${SCRIPT_NAME} CheatSheet  *                      *
-_____________________________________________________v.${VERSION}______________
-                  Regards, the Alveare Solutions #!/Society -x
+    *                       *  ${SCRIPT_NAME} CheatSheet  *                      *
+    _____________________________________________________v.${VERSION}______________
+                    Regards, the Alveare Solutions #!/Society -x
 
 EOF
     return $?
@@ -339,55 +339,56 @@ EOF
 function display_usage () {
     display_header
     cat<<EOF
-find-traffic-with-evil-bit_____________________________________________________tcpdump 'ip[6] & 128 != 0'
-find-cleartext-passwords_______________________________________________________tcpdump port http or port ftp or port smtp or port imap or port pop3 or port \\
+ 1. find-traffic-with-evil-bit_____________________________________________________tcpdump 'ip[6] & 128 != 0'
+ 2. find-cleartext-passwords_______________________________________________________tcpdump port http or port ftp or port smtp or port imap or port pop3 or port \\
                                                                                telnet -lA | egrep -i -B5 'pass=|pwd=|log=|login=|user=|username=|pw=|passw=|passwd= |\\
                                                                                password=|pass:|user:|username:|password:|login:|pass |user '
-find-ntp-traffic_______________________________________________________________tcpdump -vvAs0 port 123
-find-ftp-traffic_______________________________________________________________tcpdump -vvAs0 port ftp or ftp-data
-find-dns-traffic_______________________________________________________________tcpdump -vvAs0 port 53
-find-ssh-cnx___________________________________________________________________tcpdump 'tcp[(tcp[12]>>2):4] = 0x5353482D'
-find-http-cookies______________________________________________________________tcpdump -vvAls0 | grep 'Set-Cookie|Host:|Cookie:'
-find-http-host-headers_________________________________________________________tcpdump -vvAls0 | grep 'Host:'
-find-cleartext-get-requests____________________________________________________tcpdump -vvAls0 | grep 'GET'
-find-http-user-agents__________________________________________________________tcpdump -vvAls0 | grep 'User-Agent:'
-find-both-syn-and-rst-set______________________________________________________tcpdump 'tcp[13] = 6'
-find-traffic-based-on-packet-size_____________<OPERATOR> <PACKET-SIZE>_________tcpdump <comparison-operator> <packet-size>
-find-traffic-using-port-range_________________<START-PORT>-<END-PORT>__________tcpdump portrange <start-port>-<end-port>
-find-packets-by-network_______________________<NETWORK>________________________tcpdump net <network>
-find-traffic-by-ip____________________________<IPv4-ADDRESS>___________________tcpdump host <ipv4-address>
-isolate-tcp-rst-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-rst'
-isolate-tcp-syn-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-syn'
-isolate-syn-and-ack-flags-set__________________________________________________tcpdump 'tcp[13]=18'
-isolate-tcp-urg-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-urg'
-isolate-tcp-ack-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-ack'
-isolate-tcp-psh-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-push'
-isolate-tcp-fin-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-fin'
-show-only-ipv6-traffic_________________________________________________________tcpdump ip6
-show-traffic-of-protocol______________________<PROTOCOL>_______________________tcpdump <protocol>
-show-traffic-on-port__________________________<TARGET(optional)> <PORT-NO>_____tcpdump <target (optional)> port <port-no>
-check-cnx-from-dst-ip_________________________<IPv4-ADDRESS>___________________tcpdump -A dst <ipv4-address> -s 500 | grep -i refer
-check-ip-addr-blocked_________________________<IPv4-ADDRESS>___________________route -n | grep <address>
-check-cnx-from-src-ip_________________________<IPv4-ADDRESS>___________________tcpdump -A src <ipv4-address> -s 500 | grep -i refer
-from-one-network-to-another___________________<SRC-NET> <DST-NET>______________tcpdump -nvX src net <src-network> and dst net <dst-network>
-from-specific-ip-and-dst-for-specific-port____<IPv4-ADDRESS> <PORT-NO>_________tcpdump -nnvvS src <ipv4-addrs> and dst port <port-no>
-fetch-connected-ipv4-addrs_____________________________________________________netstat -ntu | awk '{print $5}' | cut -d: -f1 -s | sort | uniq -c | sort -nk1 -r
-non-icmp-traffic-going-to-ip__________________<IPv4-ADDRESS>___________________tcpdump dst <ipv4-addrs> and src net and not icmp
-raw-output-view________________________________________________________________tcpdump -ttnnvvS
-read-pcap-file________________________________<FILE-PATH>______________________tcpdump -r <file-path>
-who-has-maximum-access-to-server_______________________________________________netstat -plane | grep :80 | awk {'print $5'} | cut -d ':' -f1 | sort -n | uniq -c | sort -n
-get-packet-contents-hex-output_________________________________________________tcpdump -c 1 -X icmp
-filter-by-src-dst-addr________________________<TARGET> <IPv4-ADDRESS>__________tcpdump <target> <ipv4-address>
-everything-on-interface_______________________<INTERFACE>______________________tcpdump -i <interface>
-get-https-traffic______________________________________________________________tcpdump -nnSX port 443
-count-logical-processor-threads________________________________________________grep processor /proc/cpuinfo | wc -l
-block-ip-addr_________________________________<IPv4-ADDRESS>___________________route add <ipv4-address> reject
+ 3. find-ntp-traffic_______________________________________________________________tcpdump -vvAs0 port 123
+ 4. find-ftp-traffic_______________________________________________________________tcpdump -vvAs0 port ftp or ftp-data
+ 5. find-dns-traffic_______________________________________________________________tcpdump -vvAs0 port 53
+ 6. find-ssh-cnx___________________________________________________________________tcpdump 'tcp[(tcp[12]>>2):4] = 0x5353482D'
+ 7. find-http-cookies______________________________________________________________tcpdump -vvAls0 | grep 'Set-Cookie|Host:|Cookie:'
+ 8. find-http-host-headers_________________________________________________________tcpdump -vvAls0 | grep 'Host:'
+ 9. find-cleartext-get-requests____________________________________________________tcpdump -vvAls0 | grep 'GET'
+10. find-http-user-agents__________________________________________________________tcpdump -vvAls0 | grep 'User-Agent:'
+11. find-both-syn-and-rst-set______________________________________________________tcpdump 'tcp[13] = 6'
+12. find-traffic-based-on-packet-size_____________<OPERATOR> <PACKET-SIZE>_________tcpdump <comparison-operator> <packet-size>
+13. find-traffic-using-port-range_________________<START-PORT>-<END-PORT>__________tcpdump portrange <start-port>-<end-port>
+14. find-packets-by-network_______________________<NETWORK>________________________tcpdump net <network>
+15. find-traffic-by-ip____________________________<IPv4-ADDRESS>___________________tcpdump host <ipv4-address>
+16. isolate-tcp-rst-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-rst'
+17. isolate-tcp-syn-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-syn'
+18. isolate-syn-and-ack-flags-set__________________________________________________tcpdump 'tcp[13]=18'
+19. isolate-tcp-urg-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-urg'
+20. isolate-tcp-ack-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-ack'
+21. isolate-tcp-psh-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-push'
+22. isolate-tcp-fin-flags__________________________________________________________tcpdump 'tcp[tcpflags] == tcp-fin'
+23. show-only-ipv6-traffic_________________________________________________________tcpdump ip6
+24. show-traffic-of-protocol______________________<PROTOCOL>_______________________tcpdump <protocol>
+25. show-traffic-on-port__________________________<TARGET(optional)> <PORT-NO>_____tcpdump <target (optional)> port <port-no>
+26. check-cnx-from-dst-ip_________________________<IPv4-ADDRESS>___________________tcpdump -A dst <ipv4-address> -s 500 | grep -i refer
+27. check-ip-addr-blocked_________________________<IPv4-ADDRESS>___________________route -n | grep <address>
+28. check-cnx-from-src-ip_________________________<IPv4-ADDRESS>___________________tcpdump -A src <ipv4-address> -s 500 | grep -i refer
+29. from-one-network-to-another___________________<SRC-NET> <DST-NET>______________tcpdump -nvX src net <src-network> and dst net <dst-network>
+30. from-specific-ip-and-dst-for-specific-port____<IPv4-ADDRESS> <PORT-NO>_________tcpdump -nnvvS src <ipv4-addrs> and dst port <port-no>
+31. fetch-connected-ipv4-addrs_____________________________________________________netstat -ntu | awk '{print $5}' | cut -d: -f1 -s | sort | uniq -c | sort -nk1 -r
+32. non-icmp-traffic-going-to-ip__________________<IPv4-ADDRESS>___________________tcpdump dst <ipv4-addrs> and src net and not icmp
+33. raw-output-view________________________________________________________________tcpdump -ttnnvvS
+34. read-pcap-file________________________________<FILE-PATH>______________________tcpdump -r <file-path>
+35. who-has-maximum-access-to-server_______________________________________________netstat -plane | grep :80 | awk {'print $5'} | cut -d ':' -f1 | sort -n | uniq -c | sort -n
+36. get-packet-contents-hex-output_________________________________________________tcpdump -c 1 -X icmp
+37. filter-by-src-dst-addr________________________<TARGET> <IPv4-ADDRESS>__________tcpdump <target> <ipv4-address>
+38. everything-on-interface_______________________<INTERFACE>______________________tcpdump -i <interface>
+39. get-https-traffic______________________________________________________________tcpdump -nnSX port 443
+40. count-logical-processor-threads________________________________________________grep processor /proc/cpuinfo | wc -l
+41. block-ip-addr_________________________________<IPv4-ADDRESS>___________________route add <ipv4-address> reject
+-h | --help________________________________________________________________________Display this message.
 
-[ EXAMPLE ]: ~$ `basename $0` find-traffic-using-port-range 21-25
-[ EXAMPLE ]: ~$ `basename $0` find-traffic-based-on-packet-size less 112
-[ EXAMPLE ]: ~$ `basename $0` find-traffic-based-on-packet-size greater 35
-[ EXAMPLE ]: ~$ `basename $0` from-one-network-to-another 192.168.0.0/16 10.0.0.0/8
-[ EXAMPLE ]: ~$ `basename $0` find-ssh-cnx
+[ EXAMPLE ]: ~$ ./`basename $0` find-traffic-using-port-range 21-25
+[ EXAMPLE ]: ~$ ./`basename $0` find-traffic-based-on-packet-size less 112
+[ EXAMPLE ]: ~$ ./`basename $0` 12 greater 35
+[ EXAMPLE ]: ~$ ./`basename $0` from-one-network-to-another 192.168.0.0/16 10.0.0.0/8
+[ EXAMPLE ]: ~$ ./`basename $0` find-ssh-cnx
 
 EOF
 }
@@ -400,128 +401,128 @@ function init_cheatsheet () {
             -h|--help)
                 display_usage; exit $?
                 ;;
-            'isolate-tcp-rst-flags')
-                isolate_tcp_rst_flags $@
-                ;;
-            'isolate-tcp-syn-flags')
-                isolate_tcp_syn_flags $@
-                ;;
-            'isolate-syn-and-ack-flags-set')
-                isolate_packets_that_have_both_the_syn_and_ack_flags_set $@
-                ;;
-            'isolate-tcp-urg-flags')
-                isolate_tcp_urg_flags $@
-                ;;
-            'isolate-tcp-ack-flags')
-                isolate_tcp_ack_flags $@
-                ;;
-            'check-cnx-from-src-ip')
-                check_connection_from_source_ip $@
-                ;;
-            'who-has-maximum-access-to-server')
-                find_who_has_maximum_access_to_server $@
-                ;;
-            'find-traffic-with-evil-bit')
+            1|'find-traffic-with-evil-bit')
                 find_traffic_with_evil_bit $@
                 ;;
-            'find-cleartext-passwords')
+            2|'find-cleartext-passwords')
                 find_cleartext_passwords $@
                 ;;
-            'find-ntp-traffic')
+            3|'find-ntp-traffic')
                 find_ntp_traffic $@
                 ;;
-            'find-ftp-traffic')
+            4|'find-ftp-traffic')
                 find_ftp_traffic $@
                 ;;
-            'find-dns-traffic')
+            5|'find-dns-traffic')
                 find_dns_traffic $@
                 ;;
-            'find-ssh-cnx')
+            6|'find-ssh-cnx')
                 find_ssh_connections $@
                 ;;
-            'find-http-cookies')
+            7|'find-http-cookies')
                 find_http_cookies $@
                 ;;
-            'find-http-host-headers')
+            8|'find-http-host-headers')
                 find_http_host_headers $@
                 ;;
-            'find-cleartext-get-requests')
+            9|'find-cleartext-get-requests')
                 find_cleartext_get_requests $@
                 ;;
-            'find-http-user-agents')
+            10|'find-http-user-agents')
                 find_http_user_agents $@
                 ;;
-            'isolate-tcp-psh-flags')
-                isolate_tcp_psh_flags $@
-                ;;
-            'find-both-syn-and-rst-set')
+            11|'find-both-syn-and-rst-set')
                 find_both_syn_and_rst_set $@
                 ;;
-            'isolate-tcp-fin-flags')
-                isolate_tcp_fin_flags $@
-                ;;
-            'non-icmp-traffic-going-to-ip')
-                non_icmp_traffic_going_to_a_specific_ip $@
-                ;;
-            'from-one-network-to-another')
-                from_one_network_to_another $@
-                ;;
-            'from-specific-ip-and-dst-for-specific-port')
-                from_specific_ip_and_destined_for_a_specific_port $@
-                ;;
-            'raw-output-view')
-                raw_output_view $@
-                ;;
-            'read-pcap-file')
-                read_pcap_file $@
-                ;;
-            'find-traffic-based-on-packet-size')
+            12|'find-traffic-based-on-packet-size')
                 find_traffic_based_on_packet_size $@
                 ;;
-            'find-traffic-using-port-range')
+            13|'find-traffic-using-port-range')
                 find_traffic_using_port_ranges $@
                 ;;
-            'show-only-ipv6-traffic')
-                show_only_ip6_traffic $@
-                ;;
-            'show-traffic-of-protocol')
-                show_traffic_of_one_protocol $@
-                ;;
-            'show-traffic-on-port')
-                show_traffic_related_to_a_specific_port $@
-                ;;
-            'get-packet-contents-hex-output')
-                get_packet_contents_with_hex_output $@
-                ;;
-            'find-packets-by-network')
+            14|'find-packets-by-network')
                 find_packets_by_network $@
                 ;;
-            'filter-by-src-dst-addr')
-                filtering_by_source_and_or_destination $@
+            15|'isolate-tcp-rst-flags')
+                isolate_tcp_rst_flags $@
                 ;;
-            'find-traffic-by-ip')
+            16|'find-traffic-by-ip')
                 find_traffic_by_ip $@
                 ;;
-            'everything-on-interface')
-                everything_on_interface $@
+            17|'isolate-tcp-syn-flags')
+                isolate_tcp_syn_flags $@
                 ;;
-            'get-https-traffic')
-                get_https_traffic $@
+            18|'isolate-syn-and-ack-flags-set')
+                isolate_packets_that_have_both_the_syn_and_ack_flags_set $@
                 ;;
-            'count-logical-processor-threads')
-                fetch_number_of_logical_processor_threads $@
+            19|'isolate-tcp-urg-flags')
+                isolate_tcp_urg_flags $@
                 ;;
-            'fetch-connected-ipv4-addrs')
-                fetch_connected_ipv4_addresses $@
+            20'isolate-tcp-ack-flags')
+                isolate_tcp_ack_flags $@
                 ;;
-            'block-ip-addr')
-                block_ip_address $@
+            21|'isolate-tcp-psh-flags')
+                isolate_tcp_psh_flags $@
                 ;;
-            'check-cnx-from-dst-ip')
+            22|'isolate-tcp-fin-flags')
+                isolate_tcp_fin_flags $@
+                ;;
+            23|'show-only-ipv6-traffic')
+                show_only_ip6_traffic $@
+                ;;
+            24|'show-traffic-of-protocol')
+                show_traffic_of_one_protocol $@
+                ;;
+            25|'show-traffic-on-port')
+                show_traffic_related_to_a_specific_port $@
+                ;;
+            26|'check-cnx-from-dst-ip')
                 check_connection_from_destination_ip $@
                 ;;
-            'check-ip-addr-blocked')
+            27|'check-ip-addr-blocked')
                 check_ip_address_blocked $@
+                ;;
+            28|'check-cnx-from-src-ip')
+                check_connection_from_source_ip $@
+                ;;
+            29|'from-one-network-to-another')
+                from_one_network_to_another $@
+                ;;
+            30|'from-specific-ip-and-dst-for-specific-port')
+                from_specific_ip_and_destined_for_a_specific_port $@
+                ;;
+            31|'fetch-connected-ipv4-addrs')
+                fetch_connected_ipv4_addresses $@
+                ;;
+            32|'non-icmp-traffic-going-to-ip')
+                non_icmp_traffic_going_to_a_specific_ip $@
+                ;;
+            33|'raw-output-view')
+                raw_output_view $@
+                ;;
+            34|'read-pcap-file')
+                read_pcap_file $@
+                ;;
+            35|'who-has-maximum-access-to-server')
+                find_who_has_maximum_access_to_server $@
+                ;;
+            36|'get-packet-contents-hex-output')
+                get_packet_contents_with_hex_output $@
+                ;;
+            37|'filter-by-src-dst-addr')
+                filtering_by_source_and_or_destination $@
+                ;;
+            38|'everything-on-interface')
+                everything_on_interface $@
+                ;;
+            39|'get-https-traffic')
+                get_https_traffic $@
+                ;;
+            40|'count-logical-processor-threads')
+                fetch_number_of_logical_processor_threads $@
+                ;;
+            41|'block-ip-addr')
+                block_ip_address $@
                 ;;
         esac
     done
