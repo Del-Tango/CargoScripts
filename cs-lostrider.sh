@@ -16,14 +16,14 @@ function scan_random_hosts () {
 }
 
 function scan_machine () {
-    local IPv4_ADDRESSES=( $@ ) # [ex]: 192.168.1.1 192.168.1.1-254 192.168.1.0/24
+    local IPv4_ADDRESSES=( ${@:2} ) # [ex]: 192.168.1.1 192.168.1.1-254 192.168.1.0/24
     exec_msg "nmap ${IPv4_ADDRESSES[@]}"
     nmap ${IPv4_ADDRESSES[@]}
     return $?
 }
 
 function scan_machine_no_dns () {
-    local IPv4_ADDRESSES=( $@ ) # [ex]: 192.168.1.1 192.168.1.1-254 192.168.1.0/24
+    local IPv4_ADDRESSES=( ${@:2} ) # [ex]: 192.168.1.1 192.168.1.1-254 192.168.1.0/24
     exec_msg "nmap ${IPv4_ADDRESSES[@]} -n"
     nmap ${IPv4_ADDRESSES[@]} -n
     return $?
