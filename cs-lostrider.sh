@@ -348,7 +348,7 @@ function detech_sql_injection_vuln () {
 
 function show_host_interfaces_and_routes () {
     exec_msg "map --iflist"
-    map --iflist
+    nmap --iflist
     return $?
 }
 
