@@ -461,28 +461,28 @@ function display_usage () {
 24. hash-targeted-brute-force______<HASH-FILE> <FORMAT-STRING>_______________________________hashcat -m 1000 -a 3 <hash-file> <format-string>
 25. hash-combinator-attack_________<HASH-FILE> <WORDLIST-FILE> <COMBINATOR-FILE>_____________hashcat -m 1000 -a 1 <hash-file> <wordlist-file> <combinator-file>
 26. hash-hybrid-attack-dict-mask1__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a
-23. hash-hybrid-attack-dict-mask2__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a?a
-24. hash-hybrid-attack-dict-mask3__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a?a?a
-25. hash-hybrid-attack-dict-mask4__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a?a?a?a
-26. hash-hybrid-attack-dict-1mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a <wordlist-file>
-27. hash-hybrid-attack-dict-2mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a?a <wordlist-file>
-28. hash-hybrid-attack-dict-3mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a?a?a <wordlist-file>
-29. hash-hybrid-attack-dict-4mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a?a?a?a <wordlist-file>
-30. unix-passwd-crack______________<HASH-FILE1> <HASH-FILE2>...______________________________john <hash-file1> <hash-file2>...
-31. check-unix-passwd-cracked______<HASH-FILE1> <HASH-FILE2>...______________________________john --show <hash-file1> <hash-file2>...
-32. check-unix-uid0-cracked________<HASH-FILE1> <HASH-FILE2>...______________________________john --show --users=0 <hash-file1> <hash-file2>...
-33. check-unix-root-cracked________<HASH-FILE1> <HASH-FILE2>...______________________________john --show --users=root <hash-file1> <hash-file2>...
-34. check-unix-privileged-cracked__<HASH-FILE1> <HASH-FILE2>...______________________________john --show --groups=0,1 <hash-file1> <hash-file2>...
-35. check-john-the-ripper-session__(SESSION-NAME|all)________________________________________john --status=<session-name>
-36. unix-passwd-single-crack_______<HASH-FILE1> <HASH-FILE2>...______________________________john --single <hash-file1> <hash-file2>...
-37. unix-passwd-dictionary-crack___<HASH-FILE> (WORDLIST-FILE|all.lst)_______________________john --wordlist=<wordlist-file> --rules <hash-file>
-39. unix-passwd-shell-crack________<HASH-FILE> (WORDLIST-FILE|all.lst) (SHELL-CSV|sh,bash)___john --wordlist=<wordlist-file> --rules --shels=<shell-csv> <hash-file>
-40. unix-passwd-uid0-crack_________<HASH-FILE> <WORDLIST-FILE|all.lst>_______________________john --wordlist=<wordlist-file> --rules --users=0 <hash-file>
-41. unix-passwd-incremental-crack__<HASH-FILE1> <HASH-FILE2>...______________________________john --incremental <hash-file>
-42. revive-john-sessions___________(SESSION-NAME|all)________________________________________john --restore=<session-name>
-43. wordlist-from-website__________<OUT-FILE> <URL>__________________________________________cewl -w <out-file> <url>
-44. wordlist-from-website-links____<OUT-FILE> <URL>__________________________________________cewl -w <out-file> -o <url>
-45. email-list-from-website________<OUT-FILE> <URL>__________________________________________cewl -e -email_file <out-file> -o <url>
+27. hash-hybrid-attack-dict-mask2__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a?a
+28. hash-hybrid-attack-dict-mask3__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a?a?a
+29. hash-hybrid-attack-dict-mask4__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 6 <hash-file> <wordlist-file> ?a?a?a?a
+30. hash-hybrid-attack-dict-1mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a <wordlist-file>
+31. hash-hybrid-attack-dict-2mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a?a <wordlist-file>
+32. hash-hybrid-attack-dict-3mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a?a?a <wordlist-file>
+33. hash-hybrid-attack-dict-4mask__<HASH-FILE> <WORDLIST-FILE>_______________________________hashcat -m 1000 -a 7 <hash-file> ?a?a?a?a <wordlist-file>
+34. unix-passwd-crack______________<HASH-FILE1> <HASH-FILE2>...______________________________john <hash-file1> <hash-file2>...
+35. check-unix-passwd-cracked______<HASH-FILE1> <HASH-FILE2>...______________________________john --show <hash-file1> <hash-file2>...
+36. check-unix-uid0-cracked________<HASH-FILE1> <HASH-FILE2>...______________________________john --show --users=0 <hash-file1> <hash-file2>...
+37. check-unix-root-cracked________<HASH-FILE1> <HASH-FILE2>...______________________________john --show --users=root <hash-file1> <hash-file2>...
+38. check-unix-privileged-cracked__<HASH-FILE1> <HASH-FILE2>...______________________________john --show --groups=0,1 <hash-file1> <hash-file2>...
+39. check-john-the-ripper-session__(SESSION-NAME|all)________________________________________john --status=<session-name>
+40. unix-passwd-single-crack_______<HASH-FILE1> <HASH-FILE2>...______________________________john --single <hash-file1> <hash-file2>...
+41. unix-passwd-dictionary-crack___<HASH-FILE> (WORDLIST-FILE|all.lst)_______________________john --wordlist=<wordlist-file> --rules <hash-file>
+42. unix-passwd-shell-crack________<HASH-FILE> (WORDLIST-FILE|all.lst) (SHELL-CSV|sh,bash)___john --wordlist=<wordlist-file> --rules --shels=<shell-csv> <hash-file>
+43. unix-passwd-uid0-crack_________<HASH-FILE> <WORDLIST-FILE|all.lst>_______________________john --wordlist=<wordlist-file> --rules --users=0 <hash-file>
+44. unix-passwd-incremental-crack__<HASH-FILE1> <HASH-FILE2>...______________________________john --incremental <hash-file>
+45. revive-john-sessions___________(SESSION-NAME|all)________________________________________john --restore=<session-name>
+46. wordlist-from-website__________<OUT-FILE> <URL>__________________________________________cewl -w <out-file> <url>
+47. wordlist-from-website-links____<OUT-FILE> <URL>__________________________________________cewl -w <out-file> -o <url>
+48. email-list-from-website________<OUT-FILE> <URL>__________________________________________cewl -e -email_file <out-file> -o <url>
 
 [ EXAMPLE ]: ./`basename $0` hash-targeted-brute-force /etc/passwd -1 ?a -2 ?u?1?d -3 ?1 -4 ?d ?1?2?3?3?3?3?3?3?4
 [ EXAMPLE ]: ./`basename $0` 40 /etc/passwd ~/top-500-worst.pwd sh,bash,csh,tcsh
@@ -513,7 +513,6 @@ function exec_msg () {
 # INIT
 
 function init_cheat_sheet () {
-    echo "[ WARNING ]: Under construction, building..."
     local INSTRUCTION="$1"
     case "$INSTRUCTION" in
         -h|--help)
