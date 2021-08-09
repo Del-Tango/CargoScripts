@@ -512,7 +512,6 @@ function exec_msg () {
 
 # INIT
 
-# TODO
 function init_cheat_sheet () {
     echo "[ WARNING ]: Under construction, building..."
     local INSTRUCTION="$1"
