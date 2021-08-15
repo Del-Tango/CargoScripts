@@ -386,8 +386,8 @@ function monitor_victim_mac_on_interface_channel () {
     local VICTIM_MAC="$3"
     local INTERFACE="${4:-wlan0mon}"
     local CHANNEL=${5:-5}
-    exec_msg "airodump-ng -c $CHANNEL -bssid $ACCESS_POINT_BSSID -c $VICTIM_MAC $INTERFACE"
-    airodump-ng -c $CHANNEL -bssid "$ACCESS_POINT_BSSID" -c "$VICTIM_MAC" "$INTERFACE"
+    exec_msg "airodump-ng -c $CHANNEL --bssid $ACCESS_POINT_BSSID -c $VICTIM_MAC $INTERFACE"
+    airodump-ng -c $CHANNEL --bssid "$ACCESS_POINT_BSSID" -c "$VICTIM_MAC" "$INTERFACE"
     return $?
 }
 
@@ -982,7 +982,7 @@ function display_usage () {
 32. check-interface_________________________________(INTERFACE|wlan0)_________________________________________iwconfig <interface>
 33. check-injection-is-working______________________(INTERFACE|wlan0mon)______________________________________aireplay-ng -9 <interface>
 34. monitor-wireless-access-point___________________<ACCESS-POINT-BSSID> (INTERFACE|wlan0mon) (CHANNEL|5)_____airodump-ng -c <channel> --bssid <ap-bssid> <interface>
-35. monitor-victim-mac-on-interface-channel_________<BSSID> <VICTIM-MAC> (INTERFACE|wlan0mon) (CHANNEL|5)_____airodump-ng -c <channel> -bssid <ap-bssid> -c <victim-mac> <interface>
+35. monitor-victim-mac-on-interface-channel_________<BSSID> <VICTIM-MAC> (INTERFACE|wlan0mon) (CHANNEL|5)_____airodump-ng -c <channel> --bssid <ap-bssid> -c <victim-mac> <interface>
 36. monitor-interface_______________________________(INTERFACE|wlan0mon)______________________________________airodump-ng <interface>
 37. change-interface-channel________________________(INTERFACE|wlan0) (CHANNEL|5)_____________________________iwconfig <interface> channel <channel>
 38. change-interface-mac-address____________________<NEW-MAC> (INTERFACE|wlan0)_______________________________macchanger -mac <new-mac> <interface>
