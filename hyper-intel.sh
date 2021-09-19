@@ -100,7 +100,7 @@ function scaffold_procedure_index_content () {
 # Create Date: `date +'%d-%m-%Y %T'`
 # Write Date: `date +'%d-%m-%Y %T'`
 # Procedures: $((`cd "$TARGET_DIR" && find . -type d | awk -F/ '{print $2}' | \
-                    sort -u | wc -l && cd - &> /dev/null` - 1))
+                    sort -u | sed '/^$/d' | wc -l && cd - &> /dev/null` - 1))
 
 - Add your comments below -
 
@@ -170,9 +170,13 @@ EOF
 
 function update_index_tree () {
     local PROC_DIR="${HI_DEFAULT['dta-dir']}/${HI_DEFAULT['procedure-dir']}/${PROCEDURE}"
-    for dir_name in `cd $PROC_DIR && find . -type d | awk -F/ '{print $2}' | sort -u && cd - &> /dev/null`; do
+    if [ -z "$PROC_DIR" ]; then
+        return 1
+    fi
+    for dir_name in `cd $PROC_DIR && find . -type d | awk -F/ '{print $2}' | \
+            sort -u | sed '/^$/d' && cd - &> /dev/null`; do
         local PROCEDURE_PATH="${PROC_DIR}/${dir_name}"
-        for hintel_name in `cd $PROCEDURE_PATH && find . -type d | awk -F/ '{print $2}' | sort -u && cd - &> /dev/null`; do
+        for hintel_name in `cd $PROCEDURE_PATH && find . -type d | awk -F/ '{print $2}' | sort -u | sed '/^$/d' && cd - &> /dev/null`; do
             local HINTEL_PATH="${PROCEDURE_PATH}/${hintel_name}"
             update_low_level_instruction_index "$dir_name" "$hintel_name"
         done
@@ -185,12 +189,15 @@ function update_index_tree () {
 function update_low_level_instruction_index () {
     local PROCEDURE="$1"
     local HINTEL_INSTRUCTION="$2"
+    if [ -z "$PROCEDURE" ] || [ -z "$HINTEL_INSTRUCTION" ]; then
+        return 1
+    fi
     local PROC_DIR="${HI_DEFAULT['dta-dir']}/${HI_DEFAULT['procedure-dir']}/${PROCEDURE}"
     local HINTEL_DIR="${PROC_DIR}/${HINTEL_INSTRUCTION}"
     local LINTEL_INDEX="${HINTEL_DIR}/${HI_DEFAULT['lintel-index']}"
     local LINTELS=(
         `cd $HINTEL_DIR && find . -type f | awk -F/ '{print $2}' | sort -u | \
-         grep -v "${HI_DEFAULT['lintel-index']}" && cd - &> /dev/null`
+         grep -v "${HI_DEFAULT['lintel-index']}" | sed '/^$/d' && cd - &> /dev/null`
     )
     local LINTEL_COUNT=${#LINTELS[@]}
     local WDATE=`date +'%d-%m0%Y %T'`
@@ -207,11 +214,14 @@ function update_low_level_instruction_index () {
 
 function update_high_level_instruction_index () {
     local PROCEDURE="$1"
+    if [ -z "$PROCEDURE" ]; then
+        return 1
+    fi
     local PROC_DIR="${HI_DEFAULT['dta-dir']}/${HI_DEFAULT['procedure-dir']}/${PROCEDURE}"
     local HINTEL_INDEX="${PROC_DIR}/${HI_DEFAULT['hintel-index']}"
     local HINTELS=(
         `cd $PROC_DIR && find . -type d | awk -F/ '{print $2}' | \
-         sort -u && cd - &> /dev/null`
+         sort -u | sed '/^$/d' && cd - &> /dev/null`
     )
     local WDATE=`date +'%d-%m-%Y %T'`
     local HINTEL_COUNT=${#HINTELS[@]}
@@ -232,7 +242,7 @@ function update_procedure_index () {
     local PROC_ROOT_INDEX="${PROC_DIR}/${HI_DEFAULT['procedure-index']}"
     local PROCEDURES=(
         `cd $PROC_DIR && find . -type d | awk -F/ '{print $2}' | \
-         sort -u && cd - &> /dev/null`
+         sort -u | sed '/^$/d' && cd - &> /dev/null`
     )
     local WDATE=`date +'%d-%m-%Y %T'`
     local PROCEDURE_COUNT=${#PROCEDURES[@]}
@@ -265,6 +275,27 @@ function action_move () {
 function action_merge () {
     echo "[ WARNING ]: Under construction, building..."
     return 0
+}
+
+function action_edit () {
+    local PROC_DIR="${HI_DEFAULT['dta-dir']}/${HI_DEFAULT['procedure-dir']}"
+    if [ ! -z "$HI_STATUS" ] && [ "$HI_STATUS" != 'New' ]; then
+        action_edit_status
+    elif [ ! -z "$HI_TARGET" ]; then
+        action_edit_target
+    elif [ ! -z "$HI_LOW_LEVEL_INSTRUCTION" ]; then
+        action_edit_lintel_component
+    elif [ ! -z "$HI_HIGH_LEVEL_INSTRUCTION" ]; then
+        action_edit_lintel_index
+    elif [ ! -z "$HI_PROCEDURE" ]; then
+        action_edit_hintel_index
+    else
+        action_edit_procedure_index
+    fi
+    update_low_level_instruction_index "$HI_PROCEDURE" "$HI_HIGH_LEVEL_INSTRUCTION" &> /dev/null
+    update_high_level_instruction_index "$HI_PROCEDURE" &> /dev/null
+    update_procedure_index &> /dev/null
+    return $?
 }
 
 function action_remove_low_level_instruction () {
@@ -506,7 +537,7 @@ function action_edit_hintel_index () {
 
 function action_edit_procedure_index () {
     local PROC_DIR="${HI_DEFAULT['dta-dir']}/${HI_DEFAULT['procedure-dir']}"
-    local INDEX_PATH="${PROC_DIR}/{HI_DEFAULT['procedure-index']}"
+    local INDEX_PATH="${PROC_DIR}/${HI_DEFAULT['procedure-index']}"
     if [ ! -f "$INDEX_PATH" ]; then
         echo "[ NOK ]: Procedure index file does not exist! ($INDEX_PATH)"
         return 1
@@ -577,23 +608,6 @@ function action_create_low_level_instruction () {
     update_high_level_instruction_index "$HI_PROCEDURE"
     update_procedure_index
     return 0
-}
-
-function action_edit () {
-    if [ ! -z "$HI_STATUS" ] && [ "$HI_STATUS" != 'New' ]; then
-        action_edit_status
-    elif [ ! -z "$HI_TARGET" ]; then
-        action_edit_target
-    elif [ ! -z "$HI_LOW_LEVEL_INSTRUCTION" ]; then
-        action_edit_lintel_component
-    elif [ ! -z "$HI_HIGH_LEVEL_INSTRUCTION" ]; then
-        action_edit_lintel_index
-    elif [ ! -z "$HI_PROCEDURE" ]; then
-        action_edit_hintel_index
-    else
-        action_edit_procedure_index
-    fi
-    return $?
 }
 
 function action_create_high_level_instruction () {
@@ -717,7 +731,7 @@ function remove_directory () {
     if [ $HI_FORCE -eq 1 ]; then
         rm -rf "$DIR_PATH" &> /dev/null
     else
-        rm -ri "$DIR_PATH" &> /dev/null
+        rm -ri "$DIR_PATH"
     fi
     return $?
 }
@@ -727,7 +741,7 @@ function remove_file () {
     if [ $HI_FORCE -eq 1 ]; then
         rm -rf "$FL_PATH" &> /dev/null
     else
-        rm -ri "$FL_PATH" #&> /dev/null
+        rm -ri "$FL_PATH"
     fi
     return $?
 }
@@ -768,8 +782,8 @@ function waterfall_root_index_status () {
     local PROCEDURE_DIR=`dirname $PROCEDURE_INDEX_PATH`
     local INDEX_STATUS=`extract_status "$PROCEDURE_INDEX_PATH"`
     local PROCEDURES=(
-        `cd $PROCEDURE_DIR && find . -type d | awk -F/ '{print $2}' | sort -u \
-         && cd - &> /dev/null`
+        `cd $PROCEDURE_DIR && find . -type d | awk -F/ '{print $2}' | sort -u | \
+            sed '/^$/d' && cd - &> /dev/null`
     )
     for dir_name in ${PROCEDURES[@]}; do
         local HINTEL_INDEX_PATH="${PROCEDURE_DIR}/${dir_name}/${HI_DEFAULT['hintel-index']}"
@@ -979,11 +993,11 @@ function setup_index_files () {
     if [ ! -f "${ROOT_INDEX}" ] || [ -z "`cat ${ROOT_INDEX}`" ]; then
         scaffold_procedure_index_content > "$ROOT_INDEX"
     fi
-    for pdir_name in `cd $PROC_DIR && find . -type d | awk -F/ '{print $2}' | sort -u && cd - &> /dev/null`; do
+    for pdir_name in `cd $PROC_DIR && find . -type d | awk -F/ '{print $2}' | sort -u | sed '/^$/d' && cd - &> /dev/null`; do
         echo "[ INFO ]: Probing (${PROC_DIR}/${pdir_name}/${HI_DEFAULT['hintel-index']})"
         touch "${PROC_DIR}/${pdir_name}/${HI_DEFAULT['hintel-index']}" &> /dev/null
         local PROCEDURE_PATH="${PROC_DIR}/${pdir_name}"
-        for hdir_name in `cd $PROCEDURE_PATH && find . -type d | awk -F/ '{print $2}' | sort -u && cd - &> /dev/null `; do
+        for hdir_name in `cd $PROCEDURE_PATH && find . -type d | awk -F/ '{print $2}' | sort -u | sed '/^$/d' && cd - &> /dev/null `; do
             echo "[ INFO ]: Probing (${PROC_DIR}/${pdir_name}/${hdir_name}/${HI_DEFAULT['lintel-index']})"
             touch "${PROC_DIR}/${pdir_name}/${hdir_name}/${HI_DEFAULT['lintel-index']}" &> /dev/null
 
@@ -1136,7 +1150,9 @@ function init_hyperintel () {
                 ;;
         esac
     done
-    display_header
+    if [[ "$HI_ACTION" != 'edit' ]]; then
+        display_header
+    fi
     handle_action
     return $?
 }
