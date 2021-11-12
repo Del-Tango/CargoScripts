@@ -240,6 +240,8 @@ def start_watchdog():
 #@pysnooper.snoop(WD_DEFAULT['log-file'])
 def process_pin_state_argument(parser, options):
     global WD_DEFAULT
+    if not options.pin_state:
+        return False
     pin_state = options.pin_state.lower()
     if not pin_state:
         return False
@@ -288,6 +290,8 @@ def process_button_lamp_sensor_data(sensor_data):
 #@pysnooper.snoop(WD_DEFAULT['log-file'])
 def process_action_argument(parser, options):
     global WD_DEFAULT
+    if not options.gpio_action:
+        return False
     gpio_action = options.gpio_action.lower()
     if not gpio_action or gpio_action not in ('on', 'off'):
         return False
@@ -306,6 +310,8 @@ def process_pin_number_argument(parser, options):
 #@pysnooper.snoop(WD_DEFAULT['log-file'])
 def process_pin_mode_argument(parser, options):
     global WD_DEFAULT
+    if not options.pin_mode:
+        return False
     pin_mode = options.pin_mode.lower()
     if not pin_mode:
         return False
@@ -315,6 +321,8 @@ def process_pin_mode_argument(parser, options):
 #@pysnooper.snoop(WD_DEFAULT['log-file'])
 def process_gpio_mode_argument(parser, options):
     global WD_DEFAULT
+    if not options.gpio_mode:
+        return False
     gpio_mode = options.gpio_mode.lower()
     if not gpio_mode:
         return False
