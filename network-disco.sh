@@ -7,7 +7,7 @@
 SCRIPT_NAME="(NET)Disco"
 NETWORK_RANGE="$1"
 PING_COUNT=1
-PING_TIMEOUT=10
+PING_TIMEOUT=1
 
 # CHECKERS
 
@@ -25,12 +25,14 @@ function scan_network_range() {
     local NET_RANGE_START="$2"
     local NET_RANGE_END="$3"
     local ONLINE_DEVICES=()
+    echo "[ INFO ]: Scanning address range (${NET_FIRST_OCTETS}.${NET_RANGE_START}-${NET_RANGE_END})...
+    "
     for octet in `seq $NET_RANGE_START $NET_RANGE_END`; do
         ping -c $PING_COUNT -W $PING_TIMEOUT "${NET_FIRST_OCTETS}.${octet}" &> /dev/null
         if [ $? -ne 0 ]; then
             continue
         fi
-        local ONLINE_DEVICES=( ${ONLINE_DEVICES[@]} "${NET_FIRST_OCTETS}.${octet}" )
+        local ONLINE_DEVICES=( ${ONLINE_DEVICES[@]} "ONLINE:${NET_FIRST_OCTETS}.${octet}" )
     done
     if [ ${#ONLINE_DEVICES[@]} -eq 0 ]; then
         return 2
