@@ -10,8 +10,9 @@ if { [lindex $argv 0] == "--help" } {
 
      *                           *  SSH Command  *                           *
     ___________________________________________________v2.0ImpulseCMD__________
+                    Regards, the Alveare Solutions #!/Society -x
 
-    \[ USAGE \]: ./ssh-machine.exp <user> <ipv4-addr> <port-no> <password> <instruction>
+    \[ USAGE \]: ./ssh-command.exp <user> <ipv4-addr> <port-no> <password> <instruction>
     "
     exit 0
 }
