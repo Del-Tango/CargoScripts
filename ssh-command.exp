@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 #
-# Regards, the Alveare Solutions society.
+# Regards, the Alveare Solutions #!/Society -x
 #
 # SSH INSTRUCTION HANDLER
 
@@ -9,7 +9,7 @@ if { [lindex $argv 0] == "--help" } {
     ___________________________________________________________________________
 
      *                           *  SSH Command  *                           *
-    ___________________________________________________________________________
+    ___________________________________________________v2.0ImpulseCMD__________
 
     \[ USAGE \]: ./ssh-machine.exp <user> <ipv4-addr> <port-no> <password> <instruction>
     "
@@ -17,6 +17,8 @@ if { [lindex $argv 0] == "--help" } {
 }
 
 set timeout 20
+set prompt "\[#$%>\]"
+
 set user [lindex $argv 0]
 set ipaddr [lindex $argv 1]
 set port [lindex $argv 2]
@@ -26,15 +28,46 @@ set command [lindex $argv 4]
 spawn ssh $user@$ipaddr -p $port -y
 match_max 100000
 
-expect "*?assword:*"
+expect {
+    timeout {
+        send_user "Connection to $ipaddr timed out!\n"
+        exit 1
+    } "yes/no" {
+        send "yes\n"
+        exp_continue
+    } "*?assword:*" {
+        send -- "$password\n"
+    } incorrect {
+        send_user "Invalid password or account\n"
+        exit 2
+    } eof {
+        send_user "Connection to $ipaddr failed!\n"
+        exit 3
+    }
+}
 
-send -- "$password\r"
-expect "$ "
+expect {
+    -glob "${prompt}" {
+        send "$command\n"
+    } timeout {
+        send_user "Connection to $ipaddr timed out when issuing command! ($command)\n"
+        exit 4
+    } eof {
+        send_user "Connection to $ipaddr failed when issuing command! ($command)\n"
+        exit 5
+    }
+}
 
-send "$command\r"
-expect "$ "
+expect {
+    -glob "${prompt}" {
+        send "exit\n"
+    } timeout {
+        exit 4
+    }
+}
 
-send "exit\r"
 expect eof
 
-exit
+exit 0
+
+
