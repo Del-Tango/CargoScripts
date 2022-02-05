@@ -2,7 +2,7 @@
 #
 # Excellent Regards, the Alveare Solutions #!/Society -x
 #
-# Bullet Tree(T*) - Report Formatter Tool
+# BULLET TREE(T_*)
 
 SKETCH_FILE_PATH="$1"
 
@@ -10,45 +10,52 @@ function display_header() {
     cat <<EOF
     ___________________________________________________________________________
 
-     *               *  Bullet Tree(T) - Report Formatter Tool  *            *
+     *             *  Bullet Tree(T_*) - Report Formatter Tool  *            *
     ___________________________________________________________________________
-                     Regards, the Alveare Solutions #!/Society -x
+                    Regards, the Alveare Solutions #!/Society -x
 
 EOF
     return $?
 }
 
-
 function display_usage() {
     display_header
     cat <<EOF
-    [ EXAMPLE     ]: ./`basename $0` <SKETCH-FILE-PATH>
-
-    [ SKETCH FILE ]: <LEVEL>:<LINX-LVL-CSV>:<MESSAGE>;
-
-         0:-:Level 0;     |              |   * Level 0
-         1:0:Level 1;     |              |   |__ * Level 1
-         2:0:Level 2;     |              |   |   |__ * Level 2
-         3:0:Level 3;     |              |   |       |__ * Level 3
-         4:0:Level 4;     |              |   |           |__ * Level 4
-         5:0:Level 5;     |              |   |               |__ * Level 5
-         1:-:Level 1;     |              |   |
-         2:-:Level 2;     |              |   |__ * Level 1
-         3:-:Level 3;     |              |       |__ * Level 2
-         3:-:Level 3;     |              |           |__ * Level 3
-         3:-:Level 3;  ---|---->(TO)-----|-->        |__ * Level 3
-         3:-:Level 3;     |              |           |__ * Level 3
-         4:2:Level 4;     |              |           |__ * Level 3
-         4:2:Level 4;     |              |           |   |__ * Level 4
-         5:2,3:Level 5;   |              |           |   |__ * Level 4
-         5:2,3:Level 5;   |              |           |   |   |__ * Level 5
-         4:2:Level 4;     |              |           |   |   |__ * Level 5
-         4:2:Level 4;     |              |           |   |
-         3:-:Level 3;     |              |           |   |__ * Level 4
-         3:-:Level 3;     |              |           |   |__ * Level 4
-                                         |           |
-                                         |           |__ * Level 3
-                                         |           |__ * Level 3
+    [       EXAMPLE      ]: ./`basename $0` <SKETCH-FILE-PATH>
+    [ SKETCH FILE FORMAT ]: <LEVEL>:<LINX-LVL-CSV>:<MESSAGE>;
+    ___________________________________________________________________________
+    |                     |              |                                    |
+    Level:LinxCSV:Message;|       ?      |         You get the point          |
+    |_____________________|______________|____________________________________|
+    |                     |              |                                    |
+    |    ( Stage 1 )      | ( Stage 2 )  |            ( Stage 3 )             |
+    |_____________________|______________|____________________________________|
+    |                     |              |                                    |
+    |  0:-:Level 0;       |              | * Level 0                          |
+    |  1:0:Level 1;       |              | |__ * Level 1                      |
+    |  2:0:Level 2;       |              | |   |__ * Level 2                  |
+    |  3:0:Level 3;       |              | |       |__ * Level 3              |
+    |  4:0:Level 4;       |              | |           |__ * Level 4          |
+    |  5:0:Level 5;       |       ?      | |               |__ * Level 5      |
+    |  1:-:Level 1;       |   ? Magik ?  | |                                  |
+    |  2:-:Level 2;       |       ?      | |__ * Level 1                      |
+    |  3:-:Level 3;       |      ...     |     |__ * Level 2                  |
+    |  3:-:Level 3;       |              |         |__ * Level 3              |
+    |  3:-:Level 3;    ---|--->( TO )----|-->      |__ * Level 3              |
+    |  3:-:Level 3;       |              |         |__ * Level 3              |
+    |  4:2:Level 4;       |      ...     |         |__ * Level 3              |
+    |  4:2:Level 4;       |              |         |   |__ * Level 4          |
+    |  5:2,3:Level 5;     |       ?      |         |   |__ * Level 4          |
+    |  5:2,3:Level 5;     |   ? Magik ?  |         |   |   |__ * Level 5      |
+    |  4:2:Level 4;       |       ?      |         |   |   |__ * Level 5      |
+    |  4:2:Level 4;       |              |         |   |                      |
+    |  3:-:Level 3;       |              |         |   |__ * Level 4          |
+    |  3:-:Level 3;       |              |         |   |__ * Level 4          |
+    |_____________________|______________|         |                          |
+       [ Sketch File ]                   |         |__ * Level 3              |
+                                         |         |__ * Level 3              |
+                                         |____________________________________|
+                                                  [ Bullet Tree(T_*) ]
 EOF
     return $?
 }
@@ -88,7 +95,7 @@ function println_on_level() {
         if [ -z "${PREFIX}" ]; then
             local HIGHEST_LINX_LVL=0
             for lnx_lvl in ${LEVEL_LINX[@]}; do
-                if [[ ! lnx_lvl -gt ${HIGHEST_LINX_LVL} ]]; then
+                if [[ ! $lnx_lvl -gt ${HIGHEST_LINX_LVL} ]]; then
                     continue
                 fi
                 local HIGHEST_LINX_LVL=${lnx_lvl}
@@ -122,7 +129,7 @@ function process_sketch_file_content() {
         local LEVEL=`echo ${SKETCH_LINE} | cut -d ':' -f 1`
         local LINX="`echo ${SKETCH_LINE} | cut -d ':' -f 2`"
         local MSG="`echo ${SKETCH_LINE} | cut -d ':' -f 3`"
-        if [ ${LEVEL} -lt ${PREVIOUS_LEVEL} ]; then
+        if [[ ${LEVEL} -lt ${PREVIOUS_LEVEL} ]]; then
             println_on_level - "${PREVIOUS_LINX}"
         fi
         println_on_level ${LEVEL} "${LINX}" "${MSG}"
