@@ -1,0 +1,60 @@
+#!/usr/bin/expect
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# SCP DOWNLOAD HANDLER
+
+if { [lindex $argv 0] == "--help" } {
+    puts "
+    ___________________________________________________________________________
+
+     *                           *  SCP Download  *                          *
+    ___________________________________________________v1.0(D:Trax_____________
+                    Regards, the Alveare Solutions #!/Society -x
+
+    \[ USAGE \]: ./ssh-command.exp <user> <ipv4-addr> <port-no> <password> <remote-path> <local-path>
+    "
+    exit 0
+}
+
+set timeout 20
+set prompt "\[#$%>\]"
+set user [lindex $argv 0]
+set ipaddr [lindex $argv 1]
+set port [lindex $argv 2]
+set password [lindex $argv 3]
+set remote_path [lindex $argv 4]
+set local_path [lindex $argv 5]
+
+spawn scp -P $port $user@$ipaddr:$remote_path $local_path
+match_max 100000
+
+expect {
+    timeout {
+        send_user "Connection to $ipaddr timed out!\n"
+        exit 1
+    } "yes/no" {
+        send "yes\n"
+        exp_continue
+    } "*?assword:*" {
+        send -- "$password\n"
+    } incorrect {
+        send_user "Invalid password or account\n"
+        exit 2
+    } eof {
+        send_user "Connection to $ipaddr failed!\n"
+        exit 3
+    }
+}
+
+expect {
+    -glob "${prompt}" {
+        send "exit\n"
+    } timeout {
+        exit 4
+    }
+}
+
+exit 0
+
+
