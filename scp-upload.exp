@@ -26,7 +26,7 @@ set password [lindex $argv 3]
 set local_path [lindex $argv 4]
 set remote_path [lindex $argv 5]
 
-spawn scp -P $port $local_path $user@$ipaddr:$remote_path
+spawn scp -rP $port $local_path $user@$ipaddr:$remote_path
 match_max 100000
 
 expect {
