@@ -1,9 +1,13 @@
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# FETCHERS
+
 import time
 import logging
 
 log = logging.getLogger('')
-
-# FETCHERS
 
 
 def fetch_time():

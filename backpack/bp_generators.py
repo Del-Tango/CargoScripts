@@ -1,10 +1,14 @@
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# GENERATORS
+
 import string
 import random
 import logging
 
 log = logging.getLogger('')
-
-# GENERATORS
 
 
 def generate_msg_id(id_length, id_characters=list(string.ascii_letters + string.digits)):

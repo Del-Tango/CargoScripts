@@ -1,6 +1,10 @@
-import logging
-
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
 # LOGGING
+
+import logging
 
 
 #@pysnooper.snoop()

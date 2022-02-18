@@ -1,10 +1,14 @@
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# SHELL
+
 import logging
 
 from subprocess import Popen, PIPE
 
 log = logging.getLogger('')
-
-# SHELL CMD
 
 
 def shell_cmd(command, user=None):

@@ -1,10 +1,14 @@
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# CONVERTORS
+
 import json
 import logging
 import os
 
 log = logging.getLogger('')
-
-# CONVERTORS
 
 
 def json2dict(file_path):

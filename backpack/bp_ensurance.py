@@ -1,10 +1,14 @@
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# ENSURANCE
+
 import logging
 
 from os import path, makedirs, mkfifo
 
 log = logging.getLogger('')
-
-# ENSURANCE
 
 
 def ensure_fifo_exists(*args):

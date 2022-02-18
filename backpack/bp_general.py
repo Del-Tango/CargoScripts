@@ -1,11 +1,15 @@
+#!/usr/bin/python3
+#
+# Regards, the Alveare Solutions #!/Society -x
+#
+# GENERAL
+
 import os
 import logging
 
 from .bp_shell import shell_cmd as shell
 
 log = logging.getLogger('')
-
-# GENERAL
 
 
 #@pysnooper.snoop()
