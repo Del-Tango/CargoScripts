@@ -7,3 +7,8 @@ from . import bp_shell
 from . import bp_convertors
 from . import bp_general
 from . import bp_threads
+from . import serial_power_link.py
+from . import spl_interpreter.py
+from . import spl_reader.py
+from . import spl_writer.py
+
