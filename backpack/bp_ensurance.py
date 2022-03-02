@@ -16,7 +16,7 @@ def ensure_fifo_exists(*args):
     failures = 0
     for fifo_path in args:
         try:
-            mkfifo(fifo_path)
+            create = mkfifo(fifo_path)
         except OSError as e:
             log.error(e)
             failures += 1
@@ -36,7 +36,7 @@ def ensure_directories_exist(*args):
     failures = 0
     for dir_path in args:
         try:
-            makedirs(dir_path)
+            create = makedirs(dir_path)
         except OSError as e:
             log.error(e)
             failures += 1

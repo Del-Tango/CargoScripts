@@ -11,6 +11,11 @@ import logging
 log = logging.getLogger('')
 
 
+def check_superuser():
+    log.debug('')
+    return False if os.geteuid() != 0 else True
+
+
 def check_is_fifo(fifo_path):
     log.debug('')
     try:
