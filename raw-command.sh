@@ -142,7 +142,7 @@ function display_usage () {
     (-s | --silent              )
     (-p | --port-number         )=5432
     (-a | --target-address      )="127.0.0.1"
-    (-m | --message             )="echo \`date\` - (\`whoami\`) - Conscript Reporting!"
+    (-m | --message             )="\`date\` - (\`whoami\`) - Conscript Reporting!"
 
 EOF
     return $?
