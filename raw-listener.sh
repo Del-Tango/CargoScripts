@@ -1,9 +1,10 @@
 #!/bin/bash
 #
-# Regards, the Alveare Solutions society.
+# Regards, the Alveare Solutions #!/Society -x
 #
 # RAW SOCKET LISTENER
-ITERATION_COUNT=0 # Number of messages to expect. 0 indicates endless litening
+
+ITERATION_COUNT=0 # Number of messages to expect. 0 indicates endless listening
 PORT_NUMBER=8080
 TARGET='stdout' # (file | pipe | stdout)
 OUT_FILE_PATH=""
