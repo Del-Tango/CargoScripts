@@ -12,6 +12,7 @@ declare -A SYSTEM_COMMANDS
 
 DOCKER=(
 ['image']='debian'
+['image-tag']='oldstable'
 ['file']='data/Dockerfile'
 ['maintainer']='Alveare Solutions #!/Society -x'
 ['label']='com.alvearesolutions.pack="War Room"'
@@ -37,7 +38,7 @@ GAME_KIT=
 
 SCRIPT_NAME='War Room'
 VERSION='HazardousENV'
-VERSION_NO='1.0'
+VERSION_NO='1.1'
 BASE_DOCKER_IMAGE_ID=
 SURFACE_DOCKER_IMAGE_ID=
 CONTAINER=(
@@ -166,7 +167,7 @@ EOF
 
 function format_docker_file_content () {
     cat<<EOF
-FROM ${DOCKER['image']}
+FROM ${DOCKER['image']}:${DOCKER['image-tag']}
 MAINTAINER ${DOCKER['maintainer']}
 LABEL ${DOCKER['label']}
 SHELL ${DOCKER['shell']}
@@ -927,6 +928,7 @@ function display_usage () {
     -S=  | --machine-shell=      Gives the user an interactive shell to the specified
                                  Docker container. Receives container ID.
     --docker-image=              Image for Docker to build the base image on.
+    --docker-image-tag=          Tag to use for specified Docker image.
     --docker-file=               Path to Dockerfile to use while building the
                                  base image.
     --docker-maintainer=         Maintainer - Docker image metadata.
@@ -1057,6 +1059,9 @@ for opt in $@; do
             ;;
         --docker-image=*)
             DOCKER['image']="${opt#*=}"
+            ;;
+        --docker-image-tag=*)
+            DOCKER['image-tag']="${opt#*=}"
             ;;
         --docker-file=*)
             DOCKER['file']="${opt#*=}"
