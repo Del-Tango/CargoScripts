@@ -119,7 +119,7 @@ function update_log_record () {
         echo -e "    $FORMATTED_RECORD"
     fi
     if [ ! -z "$LOG_FILE" ]; then
-        echo -e "$MACHINE_STATE \t$EXPANDED_RECORD"';' >> $LOG_FILE
+        echo -e "$MACHINE_STATE $EXPANDED_RECORD"';' >> $LOG_FILE
     fi
     return $?
 }
