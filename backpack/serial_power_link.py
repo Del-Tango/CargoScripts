@@ -192,7 +192,7 @@ class SPL(object):
                 log.error(e)
                 return False
         if kwargs.get('endless') is False:
-            return self.read_to_disk(fifo_path, target='pipe', **kwargs)
+            return self.read2disk(fifo_path, target='pipe', **kwargs)
         try:
             while True:
                 self.read2disk(fifo_path, target='pipe', **kwargs)
@@ -213,7 +213,7 @@ class SPL(object):
                 log.error(e)
                 return False
         if kwargs.get('endless') is False:
-            return self.read_to_disk(file_path, target='file', **kwargs)
+            return self.read2disk(file_path, target='file', **kwargs)
         try:
             while True:
                 self.read2disk(file_path, target='file', **kwargs)
