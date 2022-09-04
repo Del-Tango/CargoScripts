@@ -7,7 +7,7 @@ declare -a OFFLINE_TARGETS
 
 SCRIPT_NAME='Sauron'
 VERSION='HoodWatch'
-VERSION_NO='1.0'
+VERSION_NO='1.1'
 
 # HOT PARAMETERS
 
