@@ -83,7 +83,7 @@ function cleanup_from_offline_cache () {
         if [[ "$MACHINE_IPV4" != "$IPV4_ADDRS" ]]; then
             continue
         fi
-        OFFLINE_TARGETS=("${OFFLINE_TARGETS[@]}/$record")
+        OFFLINE_TARGETS=( ${OFFLINE_TARGETS[@]/$record} )
         return 0
     done
     return 1
@@ -96,7 +96,7 @@ function cleanup_from_online_cache () {
         if [[ "$MACHINE_IPV4" != "$IPV4_ADDRS" ]]; then
             continue
         fi
-        ONLINE_TARGETS=("${ONLINE_TARGETS[@]}/$record")
+        ONLINE_TARGETS=( ${ONLINE_TARGETS[@]/$record} )
         return 0
     done
     return 1
