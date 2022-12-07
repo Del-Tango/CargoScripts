@@ -8,8 +8,36 @@ import os
 import logging
 
 from .bp_shell import shell_cmd as shell
+from .bp_convertors import dict2json, json2dict
+from .bp_checkers import *
 
 log = logging.getLogger('')
+
+
+def scan_value_sets(values1, values2, look_for='crossover', **kwargs):
+    '''
+    [ NOTE ]: Can look for convergence, divergence and crossover
+    '''
+    log.debug('')
+    handlers = {
+        'convergence': check_value_set_convergence,
+        'divergence': check_value_set_divergence,
+        'convergence-peaks': check_value_set_convergence_peaks,
+        'divergence-peaks': check_value_set_divergence_peaks,
+        'crossover': check_value_set_crossover,
+        'above': check_value_set_above,
+        'below': check_value_set_below,
+    }
+    return handlers[look_for](values1, values2, **kwargs)
+
+
+def pretty_dict_print(unpretty_dict):
+    '''
+    [ NOTE ]: json2dict wrapper for funziz
+              ... dude.
+    '''
+    log.debug('')
+    return dict2json(unpretty_dict)
 
 
 #@pysnooper.snoop()
@@ -40,8 +68,10 @@ def clear_screen(silence=False):
     return os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def stdout_msg(message, silence=False, red=False, info=False, warn=False,
+def stdout_msg(message, silence=False, symbol='', red=False, info=False, warn=False,
                err=False, done=False, bold=False, green=False, ok=False, nok=False):
+    if symbol:
+        message = '[ ' + symbol + ' ]: ' + message
     if red:
         display_line = '\033[91m' + str(message) + '\033[0m'
     elif green:

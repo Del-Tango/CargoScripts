@@ -7,8 +7,22 @@
 import json
 import logging
 import os
+import base64
 
 log = logging.getLogger('')
+
+
+def encode_message_base64(message):
+    base64_bytes = base64.b64encode(message_bytes)
+    base64_message = base64_bytes.decode('ascii')
+    return base64_message
+
+
+def decode_message_base64(base64_message):
+    if not isinstance(base64_message, str):
+        return False
+    base64_bytes = base64_message.encode('ascii')
+    message_bytes = base64.b64decode(base64_bytes)
 
 
 def json2dict(file_path):

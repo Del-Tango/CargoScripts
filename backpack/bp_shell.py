@@ -8,7 +8,7 @@ import logging
 
 from subprocess import Popen, PIPE
 
-log = logging.getLogger('')
+log = logging.getLogger('AsymetricRisk')
 
 
 def shell_cmd(command, user=None):
