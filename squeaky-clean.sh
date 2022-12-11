@@ -187,7 +187,7 @@ function display_usage() {
        |                          be a wise decision to explicitly specify via the
        |                          command line that the safety should be off, in
        |                          case you didn't modify the script default value
-       |                          DEFAULT( ['safety']='off' )
+       |                          DEFAULT=( ['safety']='off' )
 
        |                          Valid values are (on | off).
 
