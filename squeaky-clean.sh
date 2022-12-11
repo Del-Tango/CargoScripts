@@ -567,6 +567,9 @@ function format_command_directory_shred() {
         fi
         local COMMAND=( ${COMMAND[@]} ';')
     done
+    local COMMAND=(
+        ${COMMAND[@]} ${DISCOVERY_COMMAND[@]} '|' 'xargs' 'rm' '-rf'
+    )
     echo -n "${COMMAND[@]}"
     return $?
 }
