@@ -232,7 +232,6 @@ function display_usage() {
         -S | --self-destruct \\
         -N | --nuke
 
-
 [ EXAMPLE ]: Remove all log files, hidden files and user home files without
              shredding the data (because that takes a relatively long time),
              followed by the specified directories matching regex patterns in
