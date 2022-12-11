@@ -230,8 +230,8 @@ function display_usage() {
              Specify locations via the command line and not a .loc file.
 
     $ ./`basename $0` \\
-        -c | --clean='ssh,scp' \\
-        -t | --clean-type='files' \\
+        -c | --clean='ssh,scp,log,home' \\
+        -t | --clean-type='files,directories' \\
         -f | --file-regex='*.log,.*' \\
         -d | --directory-regex='.shady*' \\
         -H | --home-locations='/home,/root' \\
