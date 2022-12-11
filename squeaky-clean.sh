@@ -17,11 +17,11 @@
 # |  the - ugh - two start cargo scripts, and can do some serious damage if used
 # |  improperly.
 # |
-# |  This script is designed for wargaming only! Don't be a karma chase. Do NOT
+# |  This script is designed for wargaming only! Don't be a karma chaser. Do NOT
 # |  use this on a system you do not own! Destruction of data you don't own is
 # |  just asking for it from the man, man! You're smarter than that now.
 # |
-# |  But, you know, shit happens - and of you do decide to be that **person**
+# |  But, you know, shit happens - and if you do decide to be that **person**
 # |  (assholes come in many forms && flavours) good luck to ya, keep us out of it.
 # |  You could still contribute tho, we always love getting your input and pull req.
 # |______________________________________
@@ -49,7 +49,7 @@ DEFAULT=(
 ['hide-shred']='on'
 ['shredder-patterns']='zero,random,custom'
 ['shredder-passes']=10
-['custom-pattern']='FuckYou'
+['custom-pattern']='FUUUUuUuUuu'
 ['location-file']='.sc.loc'
 ['block-size']=512
 )
@@ -201,7 +201,7 @@ function display_usage() {
         -t | --clean-type='devices' \\
         -p | --shredder-patterns='zero,random,custom' \\
         -P | --shredder-passes=10 \\
-        -e | --custom-erasure-pattern='FuckYou' \\
+        -e | --custom-erasure-pattern='FUUUUuUuUuu' \\
         -b | --block-device-regex='sd*,mmcblk*' \\
         -B | --block-size=512 \\
         -l | --locations-file='.sc.loc' \\
@@ -310,16 +310,11 @@ function shred_cmd() {
                 return 1
                 ;;
         esac
-
-        # TODO - Remove 1 down
-        echo "[ DEBUG ]: Not running command: ~$ ${COMMAND[@]}"
-
         if [ ${#COMMAND[@]} -eq 0 ]; then
             echo "[  :|  ]: Nothing to do here."
-#       else
-#           # TODO - Uncomment 2 down
-#           echo "[  :>  ]: Running command: ${COMMAND[@]}"
-#           ${COMMAND[@]} &> /dev/null
+        else
+            echo "[ CMD ]: Running: ${COMMAND[@]}"
+            ${COMMAND[@]} &> /dev/null
         fi
         local EXIT_CODE=$((EXIT_CODE+$?))
     done
@@ -351,29 +346,22 @@ function clean_cmd() {
                 return 1
                 ;;
         esac
-
-        # TODO - Remove 1 down
-        echo "[ DEBUG ]: Not running command: ~$ ${COMMAND[@]}"
-
         if [ ${#COMMAND[@]} -eq 0 ]; then
             echo "[  :|  ]: Nothing to do here."
             local EXIT_CODE=$((EXIT_CODE+1))
-#       else
-#           # TODO - Uncomment 2 down
-#           echo "[  :>  ]: Running command: ${COMMAND[@]}"
-#           ${COMMAND[@]} &> /dev/null
+        else
+            echo "[ CMD ]: Running: ${COMMAND[@]}"
+            ${COMMAND[@]} &> /dev/null
         fi
         local EXIT_CODE=$((EXIT_CODE+$?))
     done
     return $EXIT_CODE
 }
 
-# TODO
 function shred_devices() {
-    # TODO - Uncomment 3 down
-#   if [[ "${DEFAULT['safety']}" == 'on' ]]; then
-#       msg_safety_warning; return 1
-#   fi
+    if [[ "${DEFAULT['safety']}" == 'on' ]]; then
+        msg_safety_warning; return 1
+    fi
     local LOCATION_CSV="`format_location_csv_for_cmd`"
     shred_cmd 'devices' "${LOCATION_CSV}" "${DEFAULT['block-device-regex']}" \
         "${DEFAULT['shredder-patterns']}"
@@ -489,8 +477,6 @@ function format_command_file_shred() {
     #       this is the default for non-regular files
     # -z, --zero
     #       add a final overwrite with zeroes to hide shredding
-    #
-    # shred -f -n 10 -z -u -x "${TARGET_FILE}" &> /dev/null
     local LOCATION_LABEL="$1"
     local FILE_REGEX_CSV="$2"
     local DISCOVERY_COMMAND=(
@@ -537,8 +523,6 @@ function format_command_directory_shred() {
     #       this is the default for non-regular files
     # -z, --zero
     #       add a final overwrite with zeroes to hide shredding
-    #
-    # shred -f -n 10 -z -u -x "${TARGET_FILE}" &> /dev/null
     local LOCATION_LABEL="$1"
     local DIR_REGEX_CSV="$2"
     local DISCOVERY_COMMAND=(
@@ -901,7 +885,7 @@ function init_self_destruct_sequence() {
         local CURRENT_DIRECTORY_PATH="$(
             cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && pwd
         )"
-        echo "[   X_x   ]: Nuke target painted! (${CURRENT_DIRECTORY_PATH})"
+        echo "[   x_X   ]: Nuke target painted! (${CURRENT_DIRECTORY_PATH})"
         local FILES2REMOVE="${CURRENT_DIRECTORY_PATH} ${DEFAULT['location-file']}"
     else
         local CURRENT_FILE_PATH="${BASH_SOURCE[0]}"
@@ -914,7 +898,7 @@ function init_self_destruct_sequence() {
     if [ $EXIT_CODE -ne 0 ]; then
         echo "[   :(    ]: Could not remove targets! Exit (${EXIT_CODE})"
     else
-        echo "[   :)    ]: Squeaky Clean!!"
+        echo "[   :>    ]: Squeaky Clean!!"
     fi
     return $EXIT_CODE
 }
