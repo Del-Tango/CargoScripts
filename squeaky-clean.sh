@@ -183,6 +183,14 @@ function display_usage() {
        |                          done after any sort of shredding in order to
        |                          hide it.
 
+    -X | --safety=           FLAG If you actually want stuff to happen it might
+       |                          be a wise decision to explicitly specify via the
+       |                          command line that the safety should be off, in
+       |                          case you didn't modify the script default value
+       |                          DEFAULT( ['safety']='off' )
+
+       |                          Valid values are (on | off).
+
 [ EXAMPLE ]: Install dependencies.
 
     $ ./`basename $0` --setup
@@ -206,6 +214,7 @@ function display_usage() {
         -B | --block-size=512 \\
         -l | --locations-file='.sc.loc' \\
         -z | --hide-shred \\
+        -X | --safety='off' \\
         -S | --self-destruct
 
 [ EXAMPLE ]: Shred poluted files for system utils ssh and scp. Remove the parent
@@ -217,10 +226,12 @@ function display_usage() {
         -t | --clean-type='files' \\
         -f | --file-regex='*.log,.*' \\
         -l | --locations-file='.sc.loc' \\
-        -S | --self-destruct \\
-        -N | --nuke \\
         -s | --shred \\
-        -z | --hide-shred
+        -z | --hide-shred \\
+        -X | --safety='off' \\
+        -S | --self-destruct \\
+        -N | --nuke
+
 
 [ EXAMPLE ]: Remove all log files, hidden files and user home files without
              shredding the data (because that takes a relatively long time),
@@ -232,6 +243,7 @@ function display_usage() {
     $ ./`basename $0` \\
         -c | --clean='ssh,scp,log,home' \\
         -t | --clean-type='files,directories' \\
+        -X | --safety='off' \\
         -f | --file-regex='*.log,.*' \\
         -d | --directory-regex='.shady*' \\
         -H | --home-locations='/home,/root' \\
@@ -867,6 +879,9 @@ function process_arguments() {
                 ;;
             -B=*|--block-size=*)
                 DEFAULT['block-size']=${opt#*=}
+                ;;
+            -X=*|--safety=*)
+                DEFAULT['safety']="${opt#*=}"
                 ;;
             *)
                 echo "[ WARNING ]: Invalid argument! (${opt})"
