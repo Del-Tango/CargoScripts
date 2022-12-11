@@ -886,6 +886,9 @@ function process_arguments() {
             -X=*|--safety=*)
                 DEFAULT['safety']="${opt#*=}"
                 ;;
+            -N|--nuke)
+                DEFAULT['nuke']='on'
+                ;;
             *)
                 echo "[ WARNING ]: Invalid argument! (${opt})"
                 ;;
