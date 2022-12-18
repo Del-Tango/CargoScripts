@@ -901,9 +901,9 @@ function display_header () {
     echo "
     ___________________________________________________________________________
 
-     *            *           *       ${SCRIPT_NAME}      *           *            *
-    _____________________________________________________v.${VERSION}________
-                        Regards, the Alveare Solutions society.
+     *                         *      ${SCRIPT_NAME}      *                        *
+    _____________________________________________________v${VERSION_NO}${VERSION}______
+               Excellent Regards, the Alveare Solutions #!/Society -x
     "
 }
 
@@ -911,54 +911,98 @@ function display_usage () {
     display_header
     cat <<EOF
     -h   | --help                Display this message.
+
     -c=  | --container-id=       Docker container ID to use for action.
+
     -i=  | --kit-installer=      Script found inside the Game Kit directory.
+
     -s   | --silent              Suppress output.
+
     -m=  | --machine-index=      Path to Docker container index file.
+
     -C=  | --create-machines=    Sets action to (create-machines). Receives the
-                                 number of Docker containers to spawn.
+         |                       number of Docker containers to spawn.
+
     -R=  | --reset-machine=      Sets action to (reset-machine). Delete and
-                                 recreate surface Docker container specified by
-                                 container ID.
+         |                       recreate surface Docker container specified by
+         |                       container ID.
+
     -T   | --teardown-machines   Sets action to (teardown-machines). Destroys
-                                 all Docker containers and images. Removes
-                                 container index file.
+         |                       all Docker containers and images. Removes
+         |                       container index file.
+
     -I=  | --install-kit=        Sets action to (install-kit). Receives path to
-                                 Game Kit tarball.
-    -S=  | --machine-shell=      Gives the user an interactive shell to the specified
-                                 Docker container. Receives container ID.
+         |                       Game Kit tarball.
+
+    -S=  | --machine-shell=      Gives the user an interactive shell to the
+         |                       specified Docker container. Receives container ID.
+
     --docker-image=              Image for Docker to build the base image on.
+
     --docker-image-tag=          Tag to use for specified Docker image.
+
     --docker-file=               Path to Dockerfile to use while building the
                                  base image.
+
     --docker-maintainer=         Maintainer - Docker image metadata.
+
     --docker-label=              Label - Docker image metadata.
+
     --docker-volume=             Volume - Path to mount point holding externally
                                  mounted volumes from native host or other
                                  containers.
+
     --docker-shell=              Default shell for game machines.
+
     --docker-user=               Default non-root user for game machines.
+
     --docker-stop-sig=           Sets the system call signal that will be sent
                                  to the container to exit. This signal can be a
                                  valid unsigned number that matches a position
                                  in the kernel’s syscall table, for instance 9,
                                  or a signal name in the format SIGNAME, for
                                  instance SIGKILL.
+
     --docker-health-script=      Path to script to use as Docker container
                                  health check.
+
     --docker-health-interval=    The health check will first run interval seconds
                                  after the container is started, and then again
                                  interval seconds after each previous check
                                  completes.
+
     --docker-health-timeout=     If a single run of the check takes longer than
                                  timeout seconds then the check is considered to
                                  have failed.
+
     --docker-health-retries=     It takes retries consecutive failures of the
                                  health check for the container to be considered
                                  unhealthy.
+
     --docker-workdir=            Sets the working directory for any Docker RUN,
                                  CMD, ENTRYPOINT, COPY and ADD instructions that
                                  follow it in the Dockerfile.
+
+    [ EXAMPLE ]: Install wargame kit on virtual war room -
+
+        ~$ ./war-room.sh \
+                --container-id=container-id
+                --install-kit=/path/to/game/kit.tar
+                --kit-installer=setup.sh
+                --machine-index=/path/to/index/file
+
+    [ EXAMPLE ]: Reset machine - will destroy the virtual war room and create a
+                 blank one in it's place -
+
+        ~$ ./war-room.sh \
+                --reset-machine=container-id
+                --machine-index=/path/to/index/file
+
+    [ EXAMPLE ]: Login to virtual war room shell -
+
+        ~$ ./war-room.sh \
+                --machine-shell=container-id
+                --machine-index=/path/to/index/file
 
 EOF
     return $?
