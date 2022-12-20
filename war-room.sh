@@ -639,7 +639,7 @@ function action_reset_machine () {
         echo "[ WARNING ]: Could not remove container index record!"\
             "(${CONTAINER_ID})"
     fi
-    echo "[ INFO ]; Spawning container from surface image..."\
+    echo "[ INFO ]: Spawning container from surface image..."\
         "($SURFACE_DOCKER_IMAGE_ID)"
     local MACHINE_ID=`start_docker_surface_container "$SURFACE_DOCKER_IMAGE_ID"`
     local EXIT_CODE=$?
@@ -912,6 +912,8 @@ function display_usage () {
     cat <<EOF
     -h   | --help                Display this message.
 
+    -s   | --setup               Install project dependencies.
+
     -c=  | --container-id=       Docker container ID to use for action.
 
     -i=  | --kit-installer=      Script found inside the Game Kit directory.
@@ -982,6 +984,10 @@ function display_usage () {
     --docker-workdir=            Sets the working directory for any Docker RUN,
                                  CMD, ENTRYPOINT, COPY and ADD instructions that
                                  follow it in the Dockerfile.
+
+    [ EXAMPLE ]: Install project dependencies -
+
+        ~$ sudo ./war_room.sh --setup
 
     [ EXAMPLE ]: Install wargame kit on virtual war room -
 
