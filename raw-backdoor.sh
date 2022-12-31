@@ -204,12 +204,14 @@ function log_msg () {
 # DISPLAY
 
 function display_header () {
-    echo "
+    cat <<EOF
     ___________________________________________________________________________
 
      *            *           * Raw Socket Backdoor *            *           *
     ___________________________________________________________________________
-                        Regards, the Alveare Solutions society."
+                Excellent Regards, the Alveare Solutions #!/Society -x
+EOF
+    return $?
 }
 
 function display_banner () {
