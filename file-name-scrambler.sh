@@ -155,13 +155,14 @@ function init_directory_content_scramble () {
 # DISPLAYS
 
 function display_header () {
-    echo "
+    cat <<EOF
     ___________________________________________________________________________
 
      *            *           * File Name Scrambler *           *            *
     ___________________________________________________________________________
-                       Regards, the Alveare Solutions society.
-    "
+               Excellent Regards, the Alveare Solutions #!/Society -x
+EOF
+    return $?
 }
 
 function display_usage () {
@@ -169,7 +170,7 @@ function display_usage () {
     cat <<EOF
     [ DESCRIPTION ]: Payload.
 
-    [ USAGE ]: $0 -f=<file-path> -d=<directory-path> -l
+    [ USAGE ]: `basename $0` -f=<file-path> -d=<directory-path> -l
 
     -h  | --help              Display this message.
     -l  | --list              Lists out the file paths without scrambling.
@@ -178,7 +179,7 @@ function display_usage () {
     -d= | --directory=        If used with -l lists all file paths in directory,
                               Else, scrambles all file names.
 
-    [ EXAMPLE ]: $0
+    [ EXAMPLE ]: `basename $0`
 
     (--file      | -f)=/path/to/file1
     (--file      | -f)=/path/to/file2
