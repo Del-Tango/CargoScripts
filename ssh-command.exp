@@ -69,15 +69,12 @@ expect {
     }
 }
 
-
-# TODO
 if {[regexp -nocase "sudo" $command]} {
     puts "Super user privileges required!"
     expect "*password for ${user}*" {
         send -- "${password}\n";
     }
 }
-
 
 expect {
     -glob "${prompt}" {
@@ -90,18 +87,3 @@ expect {
 expect eof
 
 exit 0
-
-
-
-
-# CODE DUMP
-
-#   expect "*assword*" { send "password\r"; }
-
-#   expect "*$*" { send "./jboss.sh status \r"; }
-#   if [ expect "*running*" ]; then {
-#       send "echo running \r";
-#   } else {
-#       send "./jboss.sh start \r";
-#   }
-#   fi
