@@ -12,7 +12,17 @@ if { [lindex $argv 0] == "--help" } {
     ___________________________________________________v2.0ImpulseCMD__________
                     Regards, the Alveare Solutions #!/Society -x
 
+    \[ EXIT \]: Codes -
+        0 - All good.
+        1 - Connection to target timed out.
+        2 - Invalid credentials (password/account).
+        3 - Connection to target failed.
+        4 - Command timeout.
+        5 - Command failure.
+
     \[ USAGE \]: ./ssh-command.exp <user> <ipv4-addr> <port-no> <password> <instruction>
+
+    \[ EXAMPLE \]: ./ssh-command.exp ghost 127.0.0.1 22 ghost 'sudo ls'
     "
     exit 0
 }
@@ -59,6 +69,16 @@ expect {
     }
 }
 
+
+# TODO
+if {[regexp -nocase "sudo" $command]} {
+    puts "Super user privileges required!"
+    expect "*password for ${user}*" {
+        send -- "${password}\n";
+    }
+}
+
+
 expect {
     -glob "${prompt}" {
         send "exit\n"
@@ -72,3 +92,16 @@ expect eof
 exit 0
 
 
+
+
+# CODE DUMP
+
+#   expect "*assword*" { send "password\r"; }
+
+#   expect "*$*" { send "./jboss.sh status \r"; }
+#   if [ expect "*running*" ]; then {
+#       send "echo running \r";
+#   } else {
+#       send "./jboss.sh start \r";
+#   }
+#   fi
