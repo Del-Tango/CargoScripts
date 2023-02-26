@@ -9,7 +9,7 @@ import stat
 import logging
 #import pysnooper
 
-from src.backpack.bp_filters import list_intersection
+from backpack.bp_filters import list_intersection
 
 log = logging.getLogger('')
 

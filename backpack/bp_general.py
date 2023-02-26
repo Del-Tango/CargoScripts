@@ -51,14 +51,32 @@ def write2file(*args, file_path=str(), mode='w', **kwargs):
         for line in args:
             content = content + str(line) + '\n'
         for line_key in kwargs:
-            content = content + str(line_key) + '=' + str(kwargs[line_key]) + '\n'
+            content = content + str(line_key) + '=' \
+                + str(kwargs[line_key]) + '\n'
         try:
             active_file.write(content)
         except UnicodeError as e:
             log.error(e)
             return False
-    log.debug('Wrote to file ({}):\n\n{}'. format(file_path, content))
+    log.debug('Wrote to file ({}):\n\n{}'.format(file_path, content))
     return True
+
+
+def read_file(file_path=str(), mode='r', **kwargs):
+    log.debug('')
+    if not os.path.exists(file_path):
+        shell('touch {}'.format(file_path))
+    content = []
+    with open(file_path, mode, encoding='utf-8', errors='ignore') \
+            as active_file:
+        content = active_file.readlines()
+    log.debug('Read from file ({}):\n\n{}'.format(file_path, content))
+    if kwargs.get('cleanup'):
+        with open(file_path, mode='w', encoding='utf-8', errors='ignore') \
+                as active_file:
+            active_file.write('')
+        log.debug('File cleaned up after operation.')
+    return content
 
 
 def clear_screen(silence=False):
