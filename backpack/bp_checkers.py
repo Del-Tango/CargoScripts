@@ -7,11 +7,16 @@
 import os
 import stat
 import logging
-#import pysnooper
+import pysnooper
 
-from backpack.bp_filters import list_intersection
+from src.backpack.bp_filters import list_intersection
 
 log = logging.getLogger('')
+
+
+def check_seconds_passed(datetime1, datetime2, seconds):
+    log.debug('')
+    return True if (datetime2 - datetime1).total_seconds() >= seconds else False
 
 
 #@pysnooper.snoop()
