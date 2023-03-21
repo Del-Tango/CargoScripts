@@ -23,6 +23,7 @@ def decode_message_base64(base64_message):
         return False
     base64_bytes = base64_message.encode('ascii')
     message_bytes = base64.b64decode(base64_bytes)
+    return base64_bytes
 
 
 def json2dict(file_path):
